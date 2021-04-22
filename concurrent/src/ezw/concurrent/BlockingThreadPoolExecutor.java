@@ -68,7 +68,7 @@ public class BlockingThreadPoolExecutor extends ThreadPoolExecutor {
     }
 
     /**
-     * Shuts the thread pool down and awaits termination.
+     * Shuts the thread pool down and awaits termination indefinitely.
      * @throws InterruptedException If interrupted while awaiting termination.
      */
     public void join() throws InterruptedException {

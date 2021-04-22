@@ -3,9 +3,12 @@ package ezw.concurrent;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * A wrapper for an executor service, submitting tasks that can all be cancelled or interrupted at once.
@@ -29,16 +32,12 @@ public class CancellableSubmitter {
      * @return A Future representing pending completion of the task.
      */
     public <V> Future<V> submit(Callable<V> task) {
-        AtomicBoolean registered = new AtomicBoolean();
+        Latch futureLatch = new Latch();
         // Submit a wrapping task
         var future = executorService.submit(() -> {
             try {
-                // First make sure registered
-                synchronized (registered) {
-                    while (!registered.get()) {
-                        registered.wait();
-                    }
-                }
+                // First make sure future registered
+                futureLatch.await();
                 // Execute
                 return task.call();
             } finally {
@@ -52,20 +51,19 @@ public class CancellableSubmitter {
         synchronized (submittedFutures) {
             submittedFutures.put(task, future);
         }
-        // Mark registered
-        synchronized (registered) {
-            registered.set(true);
-            registered.notifyAll();
-        }
+        // Mark future registered
+        futureLatch.release();
         return future;
     }
 
     /**
      * Attempts to cancel all futures of submitted or executing tasks. Attempts to interrupt executing tasks.
+     * @return The number of tasks cancelled.
      */
-    public void cancelSubmitted() {
+    public int cancelSubmitted() {
         synchronized (submittedFutures) {
-            submittedFutures.values().forEach(future -> future.cancel(true));
+            return (int) submittedFutures.values().stream().map(future -> future.cancel(true))
+                    .filter(Predicate.isEqual(true)).count();
         }
     }
 }
