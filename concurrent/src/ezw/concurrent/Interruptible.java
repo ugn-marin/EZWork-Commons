@@ -19,7 +19,7 @@ public abstract class Interruptible {
         V call() throws InterruptedException;
 
         /**
-         * Creates a supplier wrapper, wrapping the <code>InterruptedException</code> in an
+         * Constructs a supplier wrapper, wrapping the <code>InterruptedException</code> in an
          * <code>InterruptedRuntimeException</code>.
          */
         default Supplier<V> toSupplier() {
@@ -42,7 +42,7 @@ public abstract class Interruptible {
         void run() throws InterruptedException;
 
         /**
-         * Creates a runnable wrapper, wrapping the <code>InterruptedException</code> in an
+         * Constructs a runnable wrapper, wrapping the <code>InterruptedException</code> in an
          * <code>InterruptedRuntimeException</code>.
          */
         default Runnable toRunnable() {

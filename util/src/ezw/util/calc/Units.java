@@ -4,6 +4,9 @@ import ezw.util.Sugar;
 
 import java.util.Arrays;
 
+/**
+ * Units converters and utilities.
+ */
 public abstract class Units {
 
     private Units() {}
@@ -30,6 +33,9 @@ public abstract class Units {
         }
     }
 
+    /**
+     * Time units converters and utilities.
+     */
     public static abstract class Time {
 
         enum TimeUnit implements Unit {
@@ -100,31 +106,52 @@ public abstract class Units {
             return describe(convertNanoToMillis(nano));
         }
 
+        /**
+         * Returns the milliseconds passed since a timestamp: <code>System.currentTimeMillis() - startMillis</code>.
+         */
         public static long since(long startMillis) {
             return System.currentTimeMillis() - startMillis;
         }
 
+        /**
+         * Returns the nanoseconds passed since a nano timestamp: <code>System.nanoTime() - startNano</code>.
+         */
         public static long sinceNano(long startNano) {
             return System.nanoTime() - startNano;
         }
 
+        /**
+         * Describes the milliseconds passed since a timestamp in appropriate units.
+         */
         public static String describeSince(long startMillis) {
             return describe(since(startMillis));
         }
 
+        /**
+         * Describes the nanoseconds passed since a nano timestamp in appropriate units.
+         */
         public static String describeSinceNano(long startNano) {
             return describeNano(sinceNano(startNano));
         }
 
+        /**
+         * Converts nanoseconds to milliseconds.
+         */
         public static double convertNanoToMillis(double nano) {
             return nano / 1000000.0;
         }
 
+        /**
+         * Converts nanoseconds to seconds.
+         */
         public static double convertNanoToSeconds(double nano) {
             return TimeUnit.milliseconds.convert(convertNanoToMillis(nano), TimeUnit.seconds);
         }
     }
 
+    /**
+     * Size units converters and utilities.
+     */
     public static abstract class Size {
 
         enum SizeUnit implements Unit {
@@ -186,14 +213,23 @@ public abstract class Units {
             return SizeUnit.bytes.describe(bytes, SizeUnit.values());
         }
 
+        /**
+         * Converts bytes to KB.
+         */
         public static double convertBytesToKB(double bytes) {
             return SizeUnit.bytes.convert(bytes, SizeUnit.KB);
         }
 
+        /**
+         * Converts bytes to MB.
+         */
         public static double convertBytesToMB(double bytes) {
             return SizeUnit.bytes.convert(bytes, SizeUnit.MB);
         }
 
+        /**
+         * Converts MB to bytes.
+         */
         public static double convertMBToBytes(double MB) {
             return SizeUnit.MB.convert(MB, SizeUnit.bytes);
         }

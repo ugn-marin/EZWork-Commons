@@ -18,7 +18,7 @@ public class CancellableSubmitter {
     private final Map<Callable<?>, Future<?>> submittedFutures = new HashMap<>();
 
     /**
-     * Creates a cancellable submitter.
+     * Constructs a cancellable submitter.
      * @param executorService The executor service to submit the tasks to.
      */
     public CancellableSubmitter(ExecutorService executorService) {
