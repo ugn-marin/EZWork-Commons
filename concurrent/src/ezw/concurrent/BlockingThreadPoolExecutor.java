@@ -19,7 +19,7 @@ public class BlockingThreadPoolExecutor extends ThreadPoolExecutor {
     private final AtomicInteger submittedCount = new AtomicInteger();
 
     /**
-     * Creates a new blocking thread pool executor with a maximum pool size.
+     * Constructs a new blocking thread pool executor with a maximum pool size.
      * @param maximumPoolSize The maximum number of threads to allow in the pool.
      */
     public BlockingThreadPoolExecutor(int maximumPoolSize) {
@@ -68,7 +68,7 @@ public class BlockingThreadPoolExecutor extends ThreadPoolExecutor {
     }
 
     /**
-     * Shuts the thread pool down and awaits termination.
+     * Shuts the thread pool down and awaits termination indefinitely.
      * @throws InterruptedException If interrupted while awaiting termination.
      */
     public void join() throws InterruptedException {
