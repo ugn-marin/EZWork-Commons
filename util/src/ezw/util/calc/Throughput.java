@@ -1,6 +1,5 @@
 package ezw.util.calc;
 
-import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
