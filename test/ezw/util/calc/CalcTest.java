@@ -1,7 +1,5 @@
-package ezw.util;
+package ezw.util.calc;
 
-import util.calc.Throughput;
-import util.calc.Units;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
