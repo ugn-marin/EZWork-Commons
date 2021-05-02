@@ -1,4 +1,4 @@
-package ezw.util.calc;
+package util.calc;
 
 import java.util.concurrent.atomic.AtomicLong;
 

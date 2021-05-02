@@ -1,4 +1,4 @@
-package ezw.util;
+package util;
 
 import java.util.*;
 import java.util.stream.Collectors;

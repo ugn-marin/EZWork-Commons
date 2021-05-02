@@ -1,4 +1,4 @@
-package ezw.util.calc;
+package util.calc;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
