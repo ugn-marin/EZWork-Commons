@@ -1,6 +1,7 @@
 package ezw.util;
 
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 /**
@@ -9,6 +10,21 @@ import java.util.stream.Collectors;
 public abstract class Sugar {
 
     private Sugar() {}
+
+    /**
+     * Calls the callable and returns the result, or the default value if thrown an exception.
+     * @param callable The callable.
+     * @param defaultValue The default value.
+     * @param <T> The callable return type.
+     * @return The callable result, or default value if an exception was thrown.
+     */
+    public static <T> T orElse(Callable<T> callable, T defaultValue) {
+        try {
+            return callable.call();
+        } catch (Exception ignore) {
+            return defaultValue;
+        }
+    }
 
     /**
      * Collections utilities.
