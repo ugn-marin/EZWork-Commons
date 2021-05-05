@@ -1,6 +1,7 @@
 package ezw.util;
 
 import ezw.concurrent.Concurrent;
+import ezw.concurrent.Interruptible;
 import ezw.util.calc.Units;
 
 import java.io.BufferedReader;
@@ -11,19 +12,35 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.locks.ReentrantLock;
 
+/**
+ * An OS command line process executor. Designed to be used directly or by extending.
+ */
 public class CommandLine implements Callable<CommandLine.CommandLineResult> {
 
-    public static class CommandLineResult {
+    /**
+     * This class represents the result of the command line process execution, like status and output lines.
+     */
+    public static final class CommandLineResult {
         private int exitStatus = -1;
-        private final List<CommandLineOutputLine> output = new ArrayList<>(1);
+        private final List<CommandLineOutputLine> output;
         private final ReentrantLock outputLock = new ReentrantLock(true);
         private boolean errorPrints = false;
         private long nanoTimeTook;
 
+        CommandLineResult(boolean collectOutput) {
+            output = new ArrayList<>(collectOutput ? 1 : 0);
+        }
+
+        /**
+         * Returns true if the exit status is 0, and there were no error prints.
+         */
         public boolean isSuccessful() {
             return exitStatus == 0 && !errorPrints;
         }
 
+        /**
+         * Returns the process exit status.
+         */
         public int getExitStatus() {
             return exitStatus;
         }
@@ -32,6 +49,9 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
             this.exitStatus = exitStatus;
         }
 
+        /**
+         * Returns the total process execution time in nanoseconds.
+         */
         public long getNanoTimeTook() {
             return nanoTimeTook;
         }
@@ -40,8 +60,11 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
             this.nanoTimeTook = nanoTimeTook;
         }
 
+        /**
+         * Returns the output lines if collected. Else, an empty list.
+         */
         public List<CommandLineOutputLine> getOutput() {
-            return output;
+            return List.copyOf(output);
         }
 
         void addOutput(CommandLineOutputLine line) {
@@ -56,24 +79,36 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
         }
     }
 
-    public static class CommandLineOutputLine {
+    /**
+     * A command line output line.
+     */
+    public static final class CommandLineOutputLine {
         private final Date timestamp = new Date();
         private final String line;
         private final boolean isError;
 
-        public CommandLineOutputLine(String line, boolean isError) {
+        CommandLineOutputLine(String line, boolean isError) {
             this.line = line;
             this.isError = isError;
         }
 
+        /**
+         * Returns the time the line finished printing.
+         */
         public Date getTimestamp() {
             return timestamp;
         }
 
+        /**
+         * Returns the line content.
+         */
         public String getLine() {
             return line;
         }
 
+        /**
+         * Returns true if error output, or an IO exception in outputs interception, else false.
+         */
         public boolean isError() {
             return isError;
         }
@@ -85,6 +120,11 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
     protected CommandLineResult result;
     protected long startNano;
 
+    /**
+     * Constructs a command line.
+     * @param collectOutput If true, the standard output lines of the process are collected, else ignored.
+     * @param command The command.
+     */
     public CommandLine(boolean collectOutput, Object... command) {
         if (command.length == 0)
             throw new IllegalArgumentException("No commands received.");
@@ -94,7 +134,8 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
 
     @Override
     public CommandLineResult call() throws IOException, InterruptedException, ExecutionException {
-        result = new CommandLineResult();
+        Interruptible.validateInterrupted();
+        result = new CommandLineResult(collectOutput);
         var builder = new ProcessBuilder(command);
         builder.redirectErrorStream(collectOutput);
         startNano = System.nanoTime();
@@ -107,8 +148,12 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
         return result;
     }
 
+    /**
+     * Executes the command line.
+     * @return True if result is successful, else false.
+     */
     public boolean attempt() {
-        return Sugar.orElse(() -> call().isSuccessful(), false);
+        return Sugar.orElse(() -> call().isSuccessful(), false).get();
     }
 
     private Runnable getOutputReader(boolean isError) {
@@ -122,10 +167,16 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
         };
     }
 
+    /**
+     * Returns the last computed result.
+     */
     public CommandLineResult getLastResult() {
         return result;
     }
 
+    /**
+     * Destroy the process if started.
+     */
     public void stop() {
         if (process != null)
             process.destroy();

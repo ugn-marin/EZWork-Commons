@@ -21,7 +21,7 @@ public abstract class Units {
 
         default String describe(double value, Unit[] units) {
             return Arrays.stream(units).filter(unit -> Math.abs(value) <= unit.getLimit()).findFirst()
-                    .orElse(Sugar.Collections.last(units)).describe(value);
+                    .orElse(Sugar.last(units)).describe(value);
         }
 
         default String describe(double value) {
