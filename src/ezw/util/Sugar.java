@@ -60,7 +60,7 @@ public abstract class Sugar {
      */
     public static <I extends Iterable<?>> I requireNoneNull(I objects) {
         Objects.requireNonNull(objects, "Iterable is null.").forEach(
-                o -> Objects.requireNonNull(o, "Objects contain a null reference."));
+                o -> Objects.requireNonNull(o, "Iterable contains a null reference."));
         return objects;
     }
 
