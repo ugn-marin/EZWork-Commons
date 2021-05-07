@@ -7,6 +7,7 @@ import ezw.util.calc.Units;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -22,19 +23,21 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
     /**
      * This class represents the result of the command line process execution, like status and output lines.
      */
-    public static final class CommandLineResult {
+    public final class CommandLineResult {
         private int exitStatus = -1;
         private final List<CommandLineOutputLine> output;
-        private final ReentrantLock outputLock = new ReentrantLock(true);
+        private ReentrantLock outputLock;
         private boolean errorPrints = false;
         private long nanoTimeTook;
 
         CommandLineResult(boolean collectOutput) {
             output = new ArrayList<>(collectOutput ? 1 : 0);
+            if (collectOutput)
+                outputLock = new ReentrantLock(true);
         }
 
         /**
-         * Returns true if the exit status is 0, and there were no error prints.
+         * Returns true if the exit status is 0, and no error prints were collected.
          */
         public boolean isSuccessful() {
             return exitStatus == 0 && !errorPrints;
@@ -74,7 +77,9 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
             try {
                 output.add(line);
                 errorPrints |= line.isError();
-                (line.isError() ? System.err : System.out).println(line.getLine());
+                var stream = line.isError() ? err : out;
+                if (stream != null)
+                    stream.println(line.getLine());
             } finally {
                 outputLock.unlock();
             }
@@ -118,6 +123,8 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
 
     protected String[] command;
     private final boolean collectOutput;
+    private PrintStream out;
+    private PrintStream err;
     protected Process process;
     protected CommandLineResult result;
     protected long startNano;
@@ -132,6 +139,17 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
             throw new IllegalArgumentException("No commands received.");
         this.command = Arrays.stream(command).filter(Objects::nonNull).map(Object::toString).toArray(String[]::new);
         this.collectOutput = collectOutput;
+        if (collectOutput)
+            setOutputStreams(System.out, System.err);
+    }
+
+    /**
+     * Sets the output streams printing the output lines collected. If null, the lines will not be printed. The default
+     * streams are the standard output and error streams.
+     */
+    public void setOutputStreams(PrintStream out, PrintStream err) {
+        this.out = out;
+        this.err = err;
     }
 
     @Override
@@ -161,7 +179,7 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
      * @return True if result is successful, else false.
      */
     public boolean attempt() {
-        return Sugar.orElse(() -> call().isSuccessful(), false).get();
+        return Sugar.either(() -> call().isSuccessful(), e -> false).get();
     }
 
     private Runnable getOutputReader(boolean isError) {

@@ -1,13 +1,18 @@
 package ezw.concurrent;
 
+import ezw.util.Lazy;
+
 import java.util.concurrent.*;
 
 /**
  * This class provides a general purpose thread pool for short computational tasks, and some concurrency utilities.
  */
 public abstract class Concurrent {
-    private static final Object internalLock = new Object();
-    private static ExecutorService generalPool;
+    private static final Lazy<ExecutorService> generalPool = new Lazy<>(() -> {
+        ExecutorService generalPool = Executors.newWorkStealingPool();
+        Runtime.getRuntime().addShutdownHook(new Thread(generalPool::shutdown));
+        return generalPool;
+    });
 
     private Concurrent() {}
 
@@ -15,15 +20,7 @@ public abstract class Concurrent {
      * Returns the general purpose thread pool.
      */
     public static ExecutorService generalPool() {
-        if (generalPool == null) {
-            synchronized (internalLock) {
-                if (generalPool == null) {
-                    generalPool = Executors.newWorkStealingPool();
-                    Runtime.getRuntime().addShutdownHook(new Thread(generalPool::shutdown));
-                }
-            }
-        }
-        return generalPool;
+        return generalPool.get();
     }
 
     /**
@@ -52,7 +49,7 @@ public abstract class Concurrent {
      */
     public static void join(ExecutorService executorService) throws InterruptedException {
         executorService.shutdown();
-        if (!executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS))
+        if (!executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS))
             throw new InterruptedException();
     }
 
