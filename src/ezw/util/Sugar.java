@@ -2,6 +2,7 @@ package ezw.util;
 
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -22,18 +23,18 @@ public abstract class Sugar {
     private Sugar() {}
 
     /**
-     * Returns a supplier calling the callable and returning the result, or the default value if thrown an exception.
+     * Returns a supplier calling the callable and returning the result, or a function result if thrown an exception.
      * @param callable The callable.
-     * @param defaultValue The default value.
+     * @param onException A function returning a result on the callable exception.
      * @param <T> The callable return type.
-     * @return A supplier of the callable result or the default value.
+     * @return A supplier of the callable result if returned, or else the function result.
      */
-    public static <T> Supplier<T> orElse(Callable<T> callable, T defaultValue) {
+    public static <T> Supplier<T> either(Callable<T> callable, Function<Exception, T> onException) {
         return () -> {
             try {
                 return callable.call();
-            } catch (Exception ignore) {
-                return defaultValue;
+            } catch (Exception e) {
+                return onException.apply(e);
             }
         };
     }
@@ -101,6 +102,7 @@ public abstract class Sugar {
      */
     @SuppressWarnings("unchecked")
     public static <T> Set<T> instancesOf(Collection<?> objects, Class<?> type) {
-        return objects.stream().filter(type::isInstance).map(o -> (T) o).collect(Collectors.toSet());
+        return Objects.requireNonNull(objects, "Collection is null.").stream().filter(type::isInstance)
+                .map(o -> (T) o).collect(Collectors.toSet());
     }
 }

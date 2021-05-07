@@ -161,7 +161,7 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
      * @return True if result is successful, else false.
      */
     public boolean attempt() {
-        return Sugar.orElse(() -> call().isSuccessful(), false).get();
+        return Sugar.either(() -> call().isSuccessful(), e -> false).get();
     }
 
     private Runnable getOutputReader(boolean isError) {

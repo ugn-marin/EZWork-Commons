@@ -49,7 +49,7 @@ public abstract class Concurrent {
      */
     public static void join(ExecutorService executorService) throws InterruptedException {
         executorService.shutdown();
-        if (!executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS))
+        if (!executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS))
             throw new InterruptedException();
     }
 
