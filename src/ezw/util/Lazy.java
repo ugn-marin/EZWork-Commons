@@ -10,6 +10,7 @@ import java.util.function.Supplier;
  */
 public class Lazy<T> implements Supplier<T> {
     private final Supplier<T> valueSupplier;
+    private final AtomicBoolean isCalculating = new AtomicBoolean();
     private final AtomicBoolean isCalculated = new AtomicBoolean();
     private T value;
 
@@ -24,8 +25,19 @@ public class Lazy<T> implements Supplier<T> {
 
     @Override
     public T get() {
-        if (!isCalculated.getAndSet(true))
+        if (isCalculated())
+            return value;
+        if (!isCalculating.getAndSet(true)) {
             value = valueSupplier.get();
+            isCalculated.set(true);
+        }
         return value;
+    }
+
+    /**
+     * Returns true if the value has been calculated, else false.
+     */
+    public boolean isCalculated() {
+        return isCalculated.get();
     }
 }

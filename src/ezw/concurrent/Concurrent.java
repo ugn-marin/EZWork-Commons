@@ -1,45 +1,31 @@
 package ezw.concurrent;
 
-import ezw.util.Lazy;
-
 import java.util.concurrent.*;
 
 /**
- * This class provides a general purpose thread pool for short computational tasks, and some concurrency utilities.
+ * Various concurrency utilities.
  */
 public abstract class Concurrent {
-    private static final Lazy<ExecutorService> generalPool = new Lazy<>(() -> {
-        ExecutorService generalPool = Executors.newWorkStealingPool();
-        Runtime.getRuntime().addShutdownHook(new Thread(generalPool::shutdown));
-        return generalPool;
-    });
 
     private Concurrent() {}
 
     /**
-     * Returns the general purpose thread pool.
-     */
-    public static ExecutorService generalPool() {
-        return generalPool.get();
-    }
-
-    /**
-     * Submits a runnable into the general purpose thread pool.
-     * @param task The task.
+     * Submits a callable runnable into the commonPool.
+     * @param task A short calculation task.
      * @return The task's future.
      */
-    public static Future<?> submit(Runnable task) {
-        return generalPool().submit(task);
+    public static Future<Void> calculate(CallableRunnable task) {
+        return calculate(task.toCallable());
     }
 
     /**
-     * Submits a callable into the general purpose thread pool.
-     * @param task The task.
+     * Submits a callable into the commonPool.
+     * @param task A short calculation task.
      * @param <T> The task's result type.
      * @return The task's future.
      */
-    public static <T> Future<T> submit(Callable<T> task) {
-        return generalPool().submit(task);
+    public static <T> Future<T> calculate(Callable<T> task) {
+        return ForkJoinPool.commonPool().submit(task);
     }
 
     /**
