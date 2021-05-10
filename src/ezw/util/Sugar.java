@@ -30,6 +30,8 @@ public abstract class Sugar {
      * @return A supplier of the callable result if returned, or else the function result.
      */
     public static <T> Supplier<T> either(Callable<T> callable, Function<Exception, T> onException) {
+        Objects.requireNonNull(callable, "Callable is null.");
+        Objects.requireNonNull(onException, "Exception function is null.");
         return () -> {
             try {
                 return callable.call();
@@ -69,6 +71,8 @@ public abstract class Sugar {
      * Returns the first member of the array. Throws appropriate exceptions if the array is null or empty.
      */
     public static <T> T first(T[] objects) {
+        if (Objects.requireNonNull(objects, "Array is null.").length == 0)
+            throw new IllegalArgumentException("Array is empty.");
         return objects[0];
     }
 
@@ -76,6 +80,8 @@ public abstract class Sugar {
      * Returns the last member of the array. Throws appropriate exceptions if the array is null or empty.
      */
     public static <T> T last(T[] objects) {
+        if (Objects.requireNonNull(objects, "Array is null.").length == 0)
+            throw new IllegalArgumentException("Array is empty.");
         return objects[objects.length - 1];
     }
 
@@ -83,6 +89,8 @@ public abstract class Sugar {
      * Returns the first member of the list. Throws appropriate exceptions if the list is null or empty.
      */
     public static <T> T first(List<T> objects) {
+        if (Objects.requireNonNull(objects, "List is null.").isEmpty())
+            throw new IllegalArgumentException("List is empty.");
         return objects.get(0);
     }
 
@@ -90,6 +98,8 @@ public abstract class Sugar {
      * Returns the last member of the list. Throws appropriate exceptions if the list is null or empty.
      */
     public static <T> T last(List<T> objects) {
+        if (Objects.requireNonNull(objects, "List is null.").isEmpty())
+            throw new IllegalArgumentException("List is empty.");
         return objects.get(objects.size() - 1);
     }
 
@@ -102,7 +112,27 @@ public abstract class Sugar {
      */
     @SuppressWarnings("unchecked")
     public static <T> Set<T> instancesOf(Collection<?> objects, Class<?> type) {
+        Objects.requireNonNull(type, "Type is null.");
         return Objects.requireNonNull(objects, "Collection is null.").stream().filter(type::isInstance)
                 .map(o -> (T) o).collect(Collectors.toSet());
+    }
+
+    /**
+     * Returns a flat union array of the objects passed. That is, for any member being an array or an iterable itself,
+     * the inner members are added to the union. The order of the items is preserved.
+     * @param objects An array of objects.
+     * @return A flat union array of the objects passed.
+     */
+    public static Object[] flat(Object... objects) {
+        List<Object> flat = new ArrayList<>(Objects.requireNonNull(objects, "Array is null.").length);
+        for (Object o : objects) {
+            if (o instanceof Object[])
+                flat.addAll(Arrays.asList((Object[]) o));
+            else if (o instanceof Iterable)
+                ((Iterable<?>) o).forEach(flat::add);
+            else
+                flat.add(o);
+        }
+        return flat.toArray();
     }
 }

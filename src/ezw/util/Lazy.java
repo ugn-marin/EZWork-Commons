@@ -25,9 +25,7 @@ public class Lazy<T> implements Supplier<T> {
 
     @Override
     public T get() {
-        if (isCalculated())
-            return value;
-        if (!isCalculating.getAndSet(true)) {
+        if (!isCalculated() && !isCalculating.getAndSet(true)) {
             value = valueSupplier.get();
             isCalculated.set(true);
         }
