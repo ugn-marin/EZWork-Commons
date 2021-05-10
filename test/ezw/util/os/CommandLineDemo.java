@@ -1,5 +1,6 @@
-package ezw.util;
+package ezw.util.os;
 
+import ezw.util.Sugar;
 import ezw.util.calc.Units;
 
 import java.io.IOException;
