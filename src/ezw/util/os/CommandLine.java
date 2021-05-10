@@ -125,8 +125,8 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
      * Constructs a command line.
      * @param command The command.
      */
-    public CommandLine(Object... command) {
-        this(true, command);
+    public CommandLine(String... command) {
+        this(true, (Object[]) command);
     }
 
     /**
@@ -222,7 +222,7 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
      * @return True if result is successful, else false.
      */
     public boolean attempt() {
-        return Sugar.either(() -> call().isSuccessful(), e -> false).get();
+        return Sugar.orElse(() -> call().isSuccessful(), e -> false).get();
     }
 
     private Runnable getOutputReader(boolean isError) {

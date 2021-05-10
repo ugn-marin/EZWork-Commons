@@ -11,15 +11,6 @@ import java.util.stream.Collectors;
  */
 public abstract class Sugar {
 
-    /**
-     * The OS line separator.
-     */
-    public static final String BR = System.getProperty("line.separator");
-    /**
-     * The OS file separator.
-     */
-    public static final String DIR = System.getProperty("file.separator");
-
     private Sugar() {}
 
     /**
@@ -29,7 +20,7 @@ public abstract class Sugar {
      * @param <T> The callable return type.
      * @return A supplier of the callable result if returned, or else the function result.
      */
-    public static <T> Supplier<T> either(Callable<T> callable, Function<Exception, T> onException) {
+    public static <T> Supplier<T> orElse(Callable<T> callable, Function<Exception, T> onException) {
         Objects.requireNonNull(callable, "Callable is null.");
         Objects.requireNonNull(onException, "Exception function is null.");
         return () -> {
