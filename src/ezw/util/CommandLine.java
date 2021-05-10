@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 /**
  * An OS command line process executor. Designed as a simplified ProcessBuilder wrapper, to be used directly or by
- * extending this class.
+ * extending this class. Can be called multiple times, but only allows one runtime at any given moment.
  */
 public class CommandLine implements Callable<CommandLine.CommandLineResult> {
 
@@ -64,7 +64,7 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
         }
 
         void addOutput(CommandLineOutputLine line) {
-            outputLock.lock();
+            Interruptible.run(outputLock::lockInterruptibly);
             try {
                 output.add(line);
                 errorPrints |= line.isError();
@@ -116,9 +116,9 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
     private final boolean collectOutput;
     private PrintStream out;
     private PrintStream err;
-    protected Process process;
-    protected CommandLineResult result;
-    protected long startNano;
+    private final ReentrantLock lock;
+    private Process process;
+    private CommandLineResult result;
 
     /**
      * Constructs a command line.
@@ -142,6 +142,7 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
         this.collectOutput = collectOutput;
         if (collectOutput)
             setOutputStreams(System.out, System.err);
+        lock = new ReentrantLock(true);
     }
 
     /**
@@ -193,22 +194,26 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
 
     @Override
     public CommandLineResult call() throws IOException, InterruptedException, ExecutionException {
-        Interruptible.validateInterrupted();
-        result = new CommandLineResult(collectOutput);
-        startNano = System.nanoTime();
-        process = processBuilder.start();
-        if (collectOutput) {
-            ExecutorService outputReadingPool = Executors.newFixedThreadPool(2);
-            try {
-                Concurrent.getAll(outputReadingPool.submit(getOutputReader(false)),
-                        outputReadingPool.submit(getOutputReader(true)));
-            } finally {
-                outputReadingPool.shutdown();
+        lock.lockInterruptibly();
+        try {
+            result = new CommandLineResult(collectOutput);
+            long startNano = System.nanoTime();
+            process = processBuilder.start();
+            if (collectOutput) {
+                ExecutorService outputReadingPool = Executors.newFixedThreadPool(2);
+                try {
+                    Concurrent.getAll(outputReadingPool.submit(getOutputReader(false)),
+                            outputReadingPool.submit(getOutputReader(true)));
+                } finally {
+                    outputReadingPool.shutdown();
+                }
             }
+            result.exitStatus = process.waitFor();
+            result.nanoTimeTook = Units.Time.sinceNano(startNano);
+            return result;
+        } finally {
+            lock.unlock();
         }
-        result.exitStatus = process.waitFor();
-        result.nanoTimeTook = Units.Time.sinceNano(startNano);
-        return result;
     }
 
     /**
