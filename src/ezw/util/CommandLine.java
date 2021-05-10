@@ -4,19 +4,18 @@ import ezw.concurrent.Concurrent;
 import ezw.concurrent.Interruptible;
 import ezw.util.calc.Units;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 /**
- * An OS command line process executor. Designed to be used directly or by extending.
+ * An OS command line process executor. Designed as a simplified ProcessBuilder wrapper, to be used directly or by
+ * extending this class.
  */
 public class CommandLine implements Callable<CommandLine.CommandLineResult> {
 
@@ -121,45 +120,91 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
         }
     }
 
-    protected String[] command;
+    protected ProcessBuilder processBuilder;
     private final boolean collectOutput;
     private PrintStream out;
     private PrintStream err;
     protected Process process;
+    private final Map<String, String> additionalEnvironment = new HashMap<>(0);
     protected CommandLineResult result;
     protected long startNano;
 
     /**
      * Constructs a command line.
-     * @param collectOutput If true, the standard output lines of the process are collected, else ignored.
+     * @param command The command.
+     */
+    public CommandLine(Object... command) {
+        this(true, command);
+    }
+
+    /**
+     * Constructs a command line.
+     * @param collectOutput If true, the standard output lines are collected, else ignored. Default is true.
      * @param command The command.
      */
     public CommandLine(boolean collectOutput, Object... command) {
-        if (command.length == 0)
-            throw new IllegalArgumentException("No commands received.");
-        this.command = Arrays.stream(command).filter(Objects::nonNull).map(Object::toString).toArray(String[]::new);
+        var commandList = Arrays.stream(Objects.requireNonNull(command, "No command received."))
+                .filter(Objects::nonNull).map(Object::toString).collect(Collectors.toList());
+        if (commandList.isEmpty())
+            throw new IllegalArgumentException("No command received.");
+        processBuilder = new ProcessBuilder(commandList);
         this.collectOutput = collectOutput;
         if (collectOutput)
             setOutputStreams(System.out, System.err);
     }
 
     /**
-     * Sets the output streams printing the output lines collected. If null, the lines will not be printed. The default
-     * streams are the standard output and error streams.
+     * Turns off printing of the output lines if collected. Equivalent to:<br><code><pre>
+     * setOutputStreams(null, null);</pre></code>
+     */
+    public void setNoPrints() {
+        setOutputStreams(null, null);
+    }
+
+    /**
+     * Sets the output streams printing the output lines collected. If a null stream is passed, the lines of the
+     * according stream will not be printed. In any case the streams do not affect the lines collection. The streams can
+     * be switched during the process runtime. The default streams are the standard system output and error streams. If
+     * the process has finished, or command line is not set to collect output, this method has no effect.
      */
     public void setOutputStreams(PrintStream out, PrintStream err) {
         this.out = out;
         this.err = err;
     }
 
+    /**
+     * Sets the working directory of the process. Has no effect if already started.
+     * @param directory The working directory of the process.
+     */
+    public void setDirectory(File directory) {
+        processBuilder.directory(directory);
+    }
+
+    /**
+     * Adds an environment entry to the process, in addition to the environment it inherits from the current process.
+     * Has no effect if already started.
+     * @param key The key.
+     * @param value The value.
+     */
+    public void addEnvironment(String key, String value) {
+        processBuilder.environment().put(key, value);
+    }
+
+    /**
+     * Adds environment entries to the process, in addition to the environment it inherits from the current process. Has
+     * no effect if already started.
+     * @param environment The environment entries to add.
+     */
+    public void addEnvironment(Map<String, String> environment) {
+        processBuilder.environment().putAll(Objects.requireNonNull(environment, "Environment map is null."));
+    }
+
     @Override
     public CommandLineResult call() throws IOException, InterruptedException, ExecutionException {
         Interruptible.validateInterrupted();
         result = new CommandLineResult(collectOutput);
-        var builder = new ProcessBuilder(command);
-        builder.redirectErrorStream(collectOutput);
         startNano = System.nanoTime();
-        process = builder.start();
+        process = processBuilder.start();
         if (collectOutput) {
             ExecutorService outputReadingPool = Executors.newFixedThreadPool(2);
             try {
