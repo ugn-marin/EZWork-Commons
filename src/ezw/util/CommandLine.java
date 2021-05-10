@@ -49,19 +49,11 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
             return exitStatus;
         }
 
-        void setExitStatus(int exitStatus) {
-            this.exitStatus = exitStatus;
-        }
-
         /**
          * Returns the total process execution time in nanoseconds.
          */
         public long getNanoTimeTook() {
             return nanoTimeTook;
-        }
-
-        void setNanoTimeTook(long nanoTimeTook) {
-            this.nanoTimeTook = nanoTimeTook;
         }
 
         /**
@@ -125,7 +117,6 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
     private PrintStream out;
     private PrintStream err;
     protected Process process;
-    private final Map<String, String> additionalEnvironment = new HashMap<>(0);
     protected CommandLineResult result;
     protected long startNano;
 
@@ -163,9 +154,10 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
 
     /**
      * Sets the output streams printing the output lines collected. If a null stream is passed, the lines of the
-     * according stream will not be printed. In any case the streams do not affect the lines collection. The streams can
-     * be switched during the process runtime. The default streams are the standard system output and error streams. If
-     * the process has finished, or command line is not set to collect output, this method has no effect.
+     * according stream will not be printed. In any case the streams do not affect the lines collection, unless printing
+     * throws an exception. The streams can be switched during the process runtime. The default streams are the standard
+     * system output and error streams. If the process has finished, or command line is not set to collect output, this
+     * method has no effect.
      */
     public void setOutputStreams(PrintStream out, PrintStream err) {
         this.out = out;
@@ -214,8 +206,8 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
                 outputReadingPool.shutdown();
             }
         }
-        result.setExitStatus(process.waitFor());
-        result.setNanoTimeTook(Units.Time.sinceNano(startNano));
+        result.exitStatus = process.waitFor();
+        result.nanoTimeTook = Units.Time.sinceNano(startNano);
         return result;
     }
 
