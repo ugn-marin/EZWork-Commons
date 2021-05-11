@@ -27,7 +27,6 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
         private int exitStatus = -1;
         private final List<CommandLineOutputLine> output;
         private ReentrantLock outputLock;
-        private boolean errorPrints = false;
         private long nanoTimeTook;
 
         CommandLineResult(boolean collectOutput) {
@@ -68,7 +67,6 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
             Interruptible.run(outputLock::lockInterruptibly);
             try {
                 output.add(line);
-                errorPrints |= line.isError();
                 var stream = line.isError() ? err : out;
                 if (stream != null)
                     stream.println(line.getLine());
