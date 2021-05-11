@@ -1,7 +1,9 @@
 package ezw.util;
 
 import java.util.Objects;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -23,11 +25,18 @@ public class Lazy<T> implements Supplier<T> {
         this.valueSupplier = Objects.requireNonNull(valueSupplier, "Value supplier cannot be null.");
     }
 
+    /**
+     * Constructs a lazy supplier.
+     * @param callable A callable supplying the value. Will be calculated on the first attempt to get the value.
+     * @param onException A function returning a value if the callable throws an exception.
+     */
+    public Lazy(Callable<T> callable, Function<Exception, T> onException) {
+        this(Sugar.orElse(callable, onException));
+    }
+
     @Override
     public T get() {
-        if (isCalculated())
-            return value;
-        if (!isCalculating.getAndSet(true)) {
+        if (!isCalculated() && !isCalculating.getAndSet(true)) {
             value = valueSupplier.get();
             isCalculated.set(true);
         }

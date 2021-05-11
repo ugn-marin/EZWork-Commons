@@ -1,22 +1,22 @@
-package ezw.util;
+package ezw.util.os;
 
 import ezw.concurrent.Concurrent;
 import ezw.concurrent.Interruptible;
+import ezw.util.Sugar;
 import ezw.util.calc.Units;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 /**
- * An OS command line process executor. Designed to be used directly or by extending.
+ * An OS command line process executor. Designed as a simplified ProcessBuilder wrapper, to be used directly or by
+ * extending this class. Can be called multiple times, but only allows one runtime at any given moment.
  */
 public class CommandLine implements Callable<CommandLine.CommandLineResult> {
 
@@ -27,7 +27,6 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
         private int exitStatus = -1;
         private final List<CommandLineOutputLine> output;
         private ReentrantLock outputLock;
-        private boolean errorPrints = false;
         private long nanoTimeTook;
 
         CommandLineResult(boolean collectOutput) {
@@ -37,10 +36,10 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
         }
 
         /**
-         * Returns true if the exit status is 0, and no error prints were collected.
+         * Returns true if the exit status is 0.
          */
         public boolean isSuccessful() {
-            return exitStatus == 0 && !errorPrints;
+            return exitStatus == 0;
         }
 
         /**
@@ -50,19 +49,11 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
             return exitStatus;
         }
 
-        void setExitStatus(int exitStatus) {
-            this.exitStatus = exitStatus;
-        }
-
         /**
          * Returns the total process execution time in nanoseconds.
          */
         public long getNanoTimeTook() {
             return nanoTimeTook;
-        }
-
-        void setNanoTimeTook(long nanoTimeTook) {
-            this.nanoTimeTook = nanoTimeTook;
         }
 
         /**
@@ -73,10 +64,9 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
         }
 
         void addOutput(CommandLineOutputLine line) {
-            outputLock.lock();
+            Interruptible.run(outputLock::lockInterruptibly);
             try {
                 output.add(line);
-                errorPrints |= line.isError();
                 var stream = line.isError() ? err : out;
                 if (stream != null)
                     stream.println(line.getLine());
@@ -121,57 +111,108 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
         }
     }
 
-    protected String[] command;
+    protected ProcessBuilder processBuilder;
     private final boolean collectOutput;
     private PrintStream out;
     private PrintStream err;
-    protected Process process;
-    protected CommandLineResult result;
-    protected long startNano;
+    private final ReentrantLock lock;
+    private Process process;
+    private CommandLineResult result;
 
     /**
      * Constructs a command line.
-     * @param collectOutput If true, the standard output lines of the process are collected, else ignored.
      * @param command The command.
      */
-    public CommandLine(boolean collectOutput, Object... command) {
-        if (command.length == 0)
-            throw new IllegalArgumentException("No commands received.");
-        this.command = Arrays.stream(command).filter(Objects::nonNull).map(Object::toString).toArray(String[]::new);
-        this.collectOutput = collectOutput;
-        if (collectOutput)
-            setOutputStreams(System.out, System.err);
+    public CommandLine(String... command) {
+        this(true, (Object[]) command);
     }
 
     /**
-     * Sets the output streams printing the output lines collected. If null, the lines will not be printed. The default
-     * streams are the standard output and error streams.
+     * Constructs a command line.
+     * @param collectOutput If true, the standard output lines are collected, else ignored. Default is true.
+     * @param command The command.
+     */
+    public CommandLine(boolean collectOutput, Object... command) {
+        var commandList = Arrays.stream(Objects.requireNonNull(command, "No command received."))
+                .filter(Objects::nonNull).map(Object::toString).collect(Collectors.toList());
+        if (commandList.isEmpty())
+            throw new IllegalArgumentException("No command received.");
+        processBuilder = new ProcessBuilder(commandList);
+        this.collectOutput = collectOutput;
+        if (collectOutput)
+            setOutputStreams(System.out, System.err);
+        lock = new ReentrantLock(true);
+    }
+
+    /**
+     * Turns off printing of the output lines if collected. Equivalent to:<br><code><pre>
+     * setOutputStreams(null, null);</pre></code>
+     */
+    public void setNoPrints() {
+        setOutputStreams(null, null);
+    }
+
+    /**
+     * Sets the output streams printing the output lines collected. If a null stream is passed, the lines of the
+     * according stream will not be printed. In any case the streams do not affect the lines collection, unless printing
+     * throws an exception. The streams can be switched during the process runtime. The default streams are the standard
+     * system output and error streams. If the process has finished, or command line is not set to collect output, this
+     * method has no effect.
      */
     public void setOutputStreams(PrintStream out, PrintStream err) {
         this.out = out;
         this.err = err;
     }
 
+    /**
+     * Sets the working directory of the process. Has no effect if already started.
+     * @param directory The working directory of the process.
+     */
+    public void setDirectory(File directory) {
+        processBuilder.directory(directory);
+    }
+
+    /**
+     * Adds an environment entry to the process, in addition to the environment it inherits from the current process.
+     * Has no effect if already started.
+     * @param key The key.
+     * @param value The value.
+     */
+    public void addEnvironment(String key, String value) {
+        processBuilder.environment().put(key, value);
+    }
+
+    /**
+     * Adds environment entries to the process, in addition to the environment it inherits from the current process. Has
+     * no effect if already started.
+     * @param environment The environment entries to add.
+     */
+    public void addEnvironment(Map<String, String> environment) {
+        processBuilder.environment().putAll(Objects.requireNonNull(environment, "Environment map is null."));
+    }
+
     @Override
     public CommandLineResult call() throws IOException, InterruptedException, ExecutionException {
-        Interruptible.validateInterrupted();
-        result = new CommandLineResult(collectOutput);
-        var builder = new ProcessBuilder(command);
-        builder.redirectErrorStream(collectOutput);
-        startNano = System.nanoTime();
-        process = builder.start();
-        if (collectOutput) {
-            ExecutorService outputReadingPool = Executors.newFixedThreadPool(2);
-            try {
-                Concurrent.getAll(outputReadingPool.submit(getOutputReader(false)),
-                        outputReadingPool.submit(getOutputReader(true)));
-            } finally {
-                outputReadingPool.shutdown();
+        lock.lockInterruptibly();
+        try {
+            result = new CommandLineResult(collectOutput);
+            long startNano = System.nanoTime();
+            process = processBuilder.start();
+            if (collectOutput) {
+                ExecutorService outputReadingPool = Executors.newFixedThreadPool(2);
+                try {
+                    Concurrent.getAll(outputReadingPool.submit(getOutputReader(false)),
+                            outputReadingPool.submit(getOutputReader(true)));
+                } finally {
+                    outputReadingPool.shutdown();
+                }
             }
+            result.exitStatus = process.waitFor();
+            result.nanoTimeTook = Units.Time.sinceNano(startNano);
+            return result;
+        } finally {
+            lock.unlock();
         }
-        result.setExitStatus(process.waitFor());
-        result.setNanoTimeTook(Units.Time.sinceNano(startNano));
-        return result;
     }
 
     /**
@@ -179,7 +220,7 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
      * @return True if result is successful, else false.
      */
     public boolean attempt() {
-        return Sugar.either(() -> call().isSuccessful(), e -> false).get();
+        return Sugar.success(this, CommandLineResult::isSuccessful).get();
     }
 
     private Runnable getOutputReader(boolean isError) {
