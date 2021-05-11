@@ -37,10 +37,10 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
         }
 
         /**
-         * Returns true if the exit status is 0, and no error prints were collected.
+         * Returns true if the exit status is 0.
          */
         public boolean isSuccessful() {
-            return exitStatus == 0 && !errorPrints;
+            return exitStatus == 0;
         }
 
         /**
@@ -222,7 +222,7 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
      * @return True if result is successful, else false.
      */
     public boolean attempt() {
-        return Sugar.orElse(() -> call().isSuccessful(), e -> false).get();
+        return Sugar.success(this, CommandLineResult::isSuccessful).get();
     }
 
     private Runnable getOutputReader(boolean isError) {

@@ -3,6 +3,7 @@ package ezw.util;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -30,6 +31,19 @@ public abstract class Sugar {
                 return onException.apply(e);
             }
         };
+    }
+
+    /**
+     * Returns a supplier calling the callable and testing its result for success.
+     * @param callable The callable.
+     * @param success A predicate testing the result for success.
+     * @param <T> The callable return type.
+     * @return A supplier of the success test result.
+     */
+    public static <T> Supplier<Boolean> success(Callable<T> callable, Predicate<T> success) {
+        Objects.requireNonNull(callable, "Callable is null.");
+        Objects.requireNonNull(success, "Success predicate is null.");
+        return orElse(() -> success.test(callable.call()), e -> false);
     }
 
     /**
