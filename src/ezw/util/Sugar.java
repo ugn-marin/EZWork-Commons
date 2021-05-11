@@ -38,7 +38,8 @@ public abstract class Sugar {
      * @param callable The callable.
      * @param success A predicate testing the result for success.
      * @param <T> The callable return type.
-     * @return A supplier of the success test result.
+     * @return A supplier of the success test result. False might mean a false test result, failure of the callable, or
+     * failure of the predicate.
      */
     public static <T> Supplier<Boolean> success(Callable<T> callable, Predicate<T> success) {
         Objects.requireNonNull(callable, "Callable is null.");
