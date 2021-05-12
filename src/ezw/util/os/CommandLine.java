@@ -9,8 +9,6 @@ import java.io.*;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
@@ -74,6 +72,18 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
                 outputLock.unlock();
             }
         }
+
+        CommandLineResult returned(int exitStatus, long nanoStart) {
+            this.exitStatus = exitStatus;
+            nanoTimeTook = Units.Time.sinceNano(nanoStart);
+            return this;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("%s returned %d in %s", Sugar.first(processBuilder.command()), exitStatus,
+                    Units.Time.describeNano(nanoTimeTook));
+        }
     }
 
     /**
@@ -109,6 +119,11 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
         public boolean isError() {
             return isError;
         }
+
+        @Override
+        public String toString() {
+            return line;
+        }
     }
 
     protected ProcessBuilder processBuilder;
@@ -117,7 +132,6 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
     private PrintStream err;
     private final ReentrantLock lock;
     private Process process;
-    private CommandLineResult result;
 
     /**
      * Constructs a command line.
@@ -133,10 +147,10 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
      * @param command The command.
      */
     public CommandLine(boolean collectOutput, Object... command) {
-        var commandList = Arrays.stream(Objects.requireNonNull(command, "No command received."))
-                .filter(Objects::nonNull).map(Object::toString).collect(Collectors.toList());
+        var commandList = Arrays.stream(Sugar.requireNonEmpty(command)).filter(Objects::nonNull).map(Object::toString)
+                .collect(Collectors.toList());
         if (commandList.isEmpty())
-            throw new IllegalArgumentException("No command received.");
+            throw new IllegalArgumentException("No valid command components.");
         processBuilder = new ProcessBuilder(commandList);
         this.collectOutput = collectOutput;
         if (collectOutput)
@@ -195,21 +209,12 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
     public CommandLineResult call() throws IOException, InterruptedException, ExecutionException {
         lock.lockInterruptibly();
         try {
-            result = new CommandLineResult(collectOutput);
+            CommandLineResult result = new CommandLineResult(collectOutput);
             long startNano = System.nanoTime();
             process = processBuilder.start();
-            if (collectOutput) {
-                ExecutorService outputReadingPool = Executors.newFixedThreadPool(2);
-                try {
-                    Concurrent.getAll(outputReadingPool.submit(getOutputReader(false)),
-                            outputReadingPool.submit(getOutputReader(true)));
-                } finally {
-                    outputReadingPool.shutdown();
-                }
-            }
-            result.exitStatus = process.waitFor();
-            result.nanoTimeTook = Units.Time.sinceNano(startNano);
-            return result;
+            if (collectOutput)
+                Concurrent.parallel(getOutputReader(false, result), getOutputReader(true, result));
+            return result.returned(process.waitFor(), startNano);
         } finally {
             lock.unlock();
         }
@@ -223,7 +228,7 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
         return Sugar.success(this, CommandLineResult::isSuccessful).get();
     }
 
-    private Runnable getOutputReader(boolean isError) {
+    private Runnable getOutputReader(boolean isError, CommandLineResult result) {
         return () -> {
             try (BufferedReader br = new BufferedReader(new InputStreamReader(isError ? process.getErrorStream() :
                     process.getInputStream()))) {
@@ -232,13 +237,6 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
                 result.addOutput(new CommandLineOutputLine(e.toString(), true));
             }
         };
-    }
-
-    /**
-     * Returns the last computed result.
-     */
-    public CommandLineResult getLastResult() {
-        return result;
     }
 
     /**

@@ -48,6 +48,34 @@ public abstract class Sugar {
     }
 
     /**
+     * Validates that the array is not null or empty.
+     * @param objects The array.
+     * @param <T> The members type.
+     * @return The array.
+     * @throws NullPointerException If the array is null.
+     * @throws IllegalArgumentException If the array is empty.
+     */
+    public static <T> T[] requireNonEmpty(T[] objects) {
+        if (Objects.requireNonNull(objects, "Array is null.").length == 0)
+            throw new IllegalArgumentException("Array is empty.");
+        return objects;
+    }
+
+    /**
+     * Validates that the list is not null or empty.
+     * @param objects The list.
+     * @param <T> The members type.
+     * @return The list.
+     * @throws NullPointerException If the list is null.
+     * @throws IllegalArgumentException If the list is empty.
+     */
+    public static <T> List<T> requireNonEmpty(List<T> objects) {
+        if (Objects.requireNonNull(objects, "List is null.").isEmpty())
+            throw new IllegalArgumentException("List is empty.");
+        return objects;
+    }
+
+    /**
      * Validates that the array and every one of its members is not null.
      * @param objects The array.
      * @param <T> The members type.
@@ -74,39 +102,39 @@ public abstract class Sugar {
     }
 
     /**
+     * Returns optional of the first non-null object.
+     */
+    @SafeVarargs
+    public static <T> Optional<T> firstNonNull(T... objects) {
+        return Arrays.stream(Objects.requireNonNull(objects, "Array is null.")).filter(Objects::nonNull).findFirst();
+    }
+
+    /**
      * Returns the first member of the array. Throws appropriate exceptions if the array is null or empty.
      */
     public static <T> T first(T[] objects) {
-        if (Objects.requireNonNull(objects, "Array is null.").length == 0)
-            throw new IllegalArgumentException("Array is empty.");
-        return objects[0];
+        return requireNonEmpty(objects)[0];
     }
 
     /**
      * Returns the last member of the array. Throws appropriate exceptions if the array is null or empty.
      */
     public static <T> T last(T[] objects) {
-        if (Objects.requireNonNull(objects, "Array is null.").length == 0)
-            throw new IllegalArgumentException("Array is empty.");
-        return objects[objects.length - 1];
+        return requireNonEmpty(objects)[objects.length - 1];
     }
 
     /**
      * Returns the first member of the list. Throws appropriate exceptions if the list is null or empty.
      */
     public static <T> T first(List<T> objects) {
-        if (Objects.requireNonNull(objects, "List is null.").isEmpty())
-            throw new IllegalArgumentException("List is empty.");
-        return objects.get(0);
+        return requireNonEmpty(objects).get(0);
     }
 
     /**
      * Returns the last member of the list. Throws appropriate exceptions if the list is null or empty.
      */
     public static <T> T last(List<T> objects) {
-        if (Objects.requireNonNull(objects, "List is null.").isEmpty())
-            throw new IllegalArgumentException("List is empty.");
-        return objects.get(objects.size() - 1);
+        return requireNonEmpty(objects).get(objects.size() - 1);
     }
 
     /**

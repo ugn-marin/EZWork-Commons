@@ -1,5 +1,8 @@
 package ezw.concurrent;
 
+import ezw.util.Sugar;
+
+import java.util.Arrays;
 import java.util.concurrent.*;
 
 /**
@@ -29,14 +32,18 @@ public abstract class Concurrent {
     }
 
     /**
-     * Shuts the executor service down and awaits termination indefinitely.
-     * @param executorService The executor service.
+     * Submits several runnable tasks into a fixed pool, waits for all tasks completion.
+     * @param tasks Blocking tasks.
+     * @throws ExecutionException If any of the tasks failed.
      * @throws InterruptedException If interrupted.
      */
-    public static void join(ExecutorService executorService) throws InterruptedException {
-        executorService.shutdown();
-        if (!executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS))
-            throw new InterruptedException();
+    public static void parallel(Runnable... tasks) throws ExecutionException, InterruptedException {
+        var pool = Executors.newFixedThreadPool(Sugar.requireNoneNull(Sugar.requireNonEmpty(tasks)).length);
+        try {
+            getAll(Arrays.stream(tasks).map(pool::submit).toArray(Future[]::new));
+        } finally {
+            join(pool);
+        }
     }
 
     /**
@@ -49,5 +56,16 @@ public abstract class Concurrent {
         for (var future : futures) {
             future.get();
         }
+    }
+
+    /**
+     * Shuts the executor service down and awaits termination indefinitely.
+     * @param executorService The executor service.
+     * @throws InterruptedException If interrupted.
+     */
+    public static void join(ExecutorService executorService) throws InterruptedException {
+        executorService.shutdown();
+        if (!executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS))
+            throw new InterruptedException();
     }
 }
