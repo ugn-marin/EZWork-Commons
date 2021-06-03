@@ -24,13 +24,10 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
     public final class CommandLineResult {
         private int exitStatus = -1;
         private final List<CommandLineOutputLine> output;
-        private ReentrantLock outputLock;
         private long nanoTimeTook;
 
-        CommandLineResult(boolean collectOutput) {
+        CommandLineResult() {
             output = new ArrayList<>(collectOutput ? 1 : 0);
-            if (collectOutput)
-                outputLock = new ReentrantLock(true);
         }
 
         /**
@@ -131,6 +128,7 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
     private PrintStream out;
     private PrintStream err;
     private final ReentrantLock lock;
+    private ReentrantLock outputLock;
     private Process process;
 
     /**
@@ -153,8 +151,10 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
             throw new IllegalArgumentException("No valid command components.");
         processBuilder = new ProcessBuilder(commandList);
         this.collectOutput = collectOutput;
-        if (collectOutput)
+        if (collectOutput) {
             setOutputStreams(System.out, System.err);
+            outputLock = new ReentrantLock(true);
+        }
         lock = new ReentrantLock(true);
     }
 
@@ -209,7 +209,7 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
     public CommandLineResult call() throws IOException, InterruptedException, ExecutionException {
         lock.lockInterruptibly();
         try {
-            CommandLineResult result = new CommandLineResult(collectOutput);
+            CommandLineResult result = new CommandLineResult();
             long startNano = System.nanoTime();
             process = processBuilder.start();
             if (collectOutput)
