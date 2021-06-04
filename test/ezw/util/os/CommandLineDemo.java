@@ -27,7 +27,7 @@ public class CommandLineDemo {
     private static class Ping extends CommandLine {
 
         public static void main(String[] args) throws IOException, ExecutionException, InterruptedException {
-            System.exit(new Ping(args[0]).call().getExitStatus());
+            System.exit(new Ping(Sugar.first(args)).call().getExitStatus());
         }
 
         Ping(String host) {
