@@ -4,7 +4,6 @@ import ezw.util.Sugar;
 
 import java.util.Objects;
 import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -14,8 +13,7 @@ import java.util.function.Supplier;
  */
 public class Lazy<T> implements Supplier<T> {
     private final Supplier<T> valueSupplier;
-    private final AtomicBoolean isCalculating = new AtomicBoolean();
-    private final AtomicBoolean isCalculated = new AtomicBoolean();
+    private boolean isCalculated;
     private T value;
 
     /**
@@ -38,9 +36,13 @@ public class Lazy<T> implements Supplier<T> {
 
     @Override
     public T get() {
-        if (!isCalculated() && !isCalculating.getAndSet(true)) {
-            value = valueSupplier.get();
-            isCalculated.set(true);
+        if (!isCalculated) {
+            synchronized (valueSupplier) {
+                if (!isCalculated) {
+                    value = valueSupplier.get();
+                    isCalculated = true;
+                }
+            }
         }
         return value;
     }
@@ -49,6 +51,6 @@ public class Lazy<T> implements Supplier<T> {
      * Returns true if the value has been calculated, else false.
      */
     public boolean isCalculated() {
-        return isCalculated.get();
+        return isCalculated;
     }
 }
