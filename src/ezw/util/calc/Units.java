@@ -21,11 +21,13 @@ public abstract class Units {
 
         default String describe(double value, Unit[] units) {
             return Arrays.stream(units).filter(unit -> Math.abs(value) <= unit.getLimit()).findFirst()
-                    .orElse(Sugar.last(units)).describe(value);
+                    .orElse(Sugar.last(units)).describe(value, Sugar.first(units));
         }
 
-        default String describe(double value) {
-            return String.format("%s %s", Scale.getDefault().apply(value / getValue()), name());
+        default String describe(double value, Unit smallestUnit) {
+            double unitValue = Scale.getDefault().apply(value / getValue());
+            return String.format("%s %s", this == smallestUnit ? Long.toString((long) unitValue) :
+                    Double.toString(unitValue), name());
         }
 
         default double convert(double value, Unit targetUnit) {
@@ -93,7 +95,7 @@ public abstract class Units {
          * @param millis The time in milliseconds.
          * @return The time description.
          */
-        public static String describe(double millis) {
+        public static String describe(long millis) {
             return TimeUnit.milliseconds.describe(millis, TimeUnit.values());
         }
 
@@ -102,7 +104,7 @@ public abstract class Units {
          * @param nano The time in nanoseconds.
          * @return The time description.
          */
-        public static String describeNano(double nano) {
+        public static String describeNano(long nano) {
             return describe(convertNanoToMillis(nano));
         }
 
@@ -137,14 +139,14 @@ public abstract class Units {
         /**
          * Converts nanoseconds to milliseconds.
          */
-        public static double convertNanoToMillis(double nano) {
-            return nano / 1000000.0;
+        public static long convertNanoToMillis(long nano) {
+            return nano / 1000000L;
         }
 
         /**
          * Converts nanoseconds to seconds.
          */
-        public static double convertNanoToSeconds(double nano) {
+        public static double convertNanoToSeconds(long nano) {
             return TimeUnit.milliseconds.convert(convertNanoToMillis(nano), TimeUnit.seconds);
         }
     }
@@ -209,21 +211,21 @@ public abstract class Units {
          * @param bytes The size in bytes.
          * @return The size description.
          */
-        public static String describe(double bytes) {
+        public static String describe(long bytes) {
             return SizeUnit.bytes.describe(bytes, SizeUnit.values());
         }
 
         /**
          * Converts bytes to KB.
          */
-        public static double convertBytesToKB(double bytes) {
+        public static double convertBytesToKB(long bytes) {
             return SizeUnit.bytes.convert(bytes, SizeUnit.KB);
         }
 
         /**
          * Converts bytes to MB.
          */
-        public static double convertBytesToMB(double bytes) {
+        public static double convertBytesToMB(long bytes) {
             return SizeUnit.bytes.convert(bytes, SizeUnit.MB);
         }
 
