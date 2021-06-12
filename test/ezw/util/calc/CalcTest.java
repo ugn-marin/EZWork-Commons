@@ -3,6 +3,9 @@ package ezw.util.calc;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
 public class CalcTest {
 
     @Test
@@ -84,5 +87,16 @@ public class CalcTest {
         avg.add(t1);
         avg.add(t2);
         Assertions.assertEquals(7, avg.getMBSec());
+    }
+
+    @Test
+    void zip() throws IOException {
+        String text = "There's nothing special about this text, but repeating it will make it easy to zip.".repeat(999);
+        byte[] utf8 = text.getBytes(StandardCharsets.UTF_8);
+        byte[] zipped = Bytes.zip(utf8);
+        System.out.printf("Zipped %s into %s%n", Units.Size.describe(utf8.length), Units.Size.describe(zipped.length));
+        Assertions.assertTrue(zipped.length < utf8.length);
+        byte[] unzipped = Bytes.unzip(zipped);
+        Assertions.assertEquals(text, new String(unzipped, StandardCharsets.UTF_8));
     }
 }
