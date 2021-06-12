@@ -18,8 +18,7 @@ public class Lazy<T> implements Supplier<T> {
 
     /**
      * Constructs a lazy supplier.
-     * @param valueSupplier The value supplier. Will be calculated on the first attempt to get the value. If the
-     *                      calculation fails, the value will remain null.
+     * @param valueSupplier The value supplier. Will be calculated on the first attempt to get the value.
      */
     public Lazy(Supplier<T> valueSupplier) {
         this.valueSupplier = Objects.requireNonNull(valueSupplier, "Value supplier cannot be null.");
@@ -34,6 +33,11 @@ public class Lazy<T> implements Supplier<T> {
         this(Sugar.orElse(callable, onException));
     }
 
+    /**
+     * Calculates the value if called for the first time and returns it, else returns the previously calculated value.
+     * Upon calculation marks this instance as <i>calculated</i>, unless the calculation fails, in which case the method
+     * will continue to fail until a value is successfully calculated.
+     */
     @Override
     public T get() {
         if (!isCalculated) {
