@@ -14,9 +14,9 @@ public class JVM extends CommandLine {
     /**
      * Constructs a JVM executor.
      * @param mainClass The main class of the new JVM.
-     * @param args Optional main arguments.
+     * @param args Optional main arguments. Only non-null elements are used.
      */
-    public JVM(Class<?> mainClass, String... args) {
+    public JVM(Class<?> mainClass, Object... args) {
         this(true, null, mainClass, args);
     }
 
@@ -25,10 +25,11 @@ public class JVM extends CommandLine {
      * @param collectOutput If true, the standard output lines are collected, else ignored. Default is true.
      * @param jvmParameters Optional JVM parameters to include in the command line.
      * @param mainClass The main class of the new JVM.
-     * @param args Optional main arguments.
+     * @param args Optional main arguments. Only non-null elements are used.
      */
-    public JVM(boolean collectOutput, List<String> jvmParameters, Class<?> mainClass, String... args) {
+    public JVM(boolean collectOutput, List<String> jvmParameters, Class<?> mainClass, Object... args) {
         super(collectOutput, Sugar.flat(Path.of(System.getProperty("sun.boot.library.path"), "java").toString(),
-                jvmParameters, "-cp", System.getProperty("java.class.path"), mainClass.getName(), args));
+                jvmParameters, "-cp", System.getProperty("java.class.path"), mainClass.getName(),
+                Sugar.toStrings(args)));
     }
 }
