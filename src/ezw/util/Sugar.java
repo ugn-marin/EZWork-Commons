@@ -104,6 +104,30 @@ public abstract class Sugar {
     }
 
     /**
+     * Validates that the array is not null or empty, and every one of its members is not null.<br>
+     * Equivalent to:<br><code><pre>
+     * requireNonEmpty(requireNoneNull(objects));</pre></code>
+     * @param objects The array.
+     * @param <T> The members type.
+     * @return The array.
+     */
+    public static <T> T[] requireFull(T[] objects) {
+        return requireNonEmpty(requireNoneNull(objects));
+    }
+
+    /**
+     * Validates that the list is not null or empty, and every one of its members is not null.<br>
+     * Equivalent to:<br><code><pre>
+     * requireNonEmpty(requireNoneNull(objects));</pre></code>
+     * @param objects The list.
+     * @param <T> The members type.
+     * @return The list.
+     */
+    public static <T> List<T> requireFull(List<T> objects) {
+        return requireNonEmpty(requireNoneNull(objects));
+    }
+
+    /**
      * Returns optional of the first non-null object.
      */
     @SafeVarargs

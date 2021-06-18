@@ -8,7 +8,7 @@ import java.util.concurrent.ExecutionException;
 public class CommandLineDemo {
 
     public static void main(String[] args) throws IOException, ExecutionException, InterruptedException {
-        var hostnameCommand = new CommandLine(true, "hostname");
+        var hostnameCommand = new CommandLine("hostname");
         hostnameCommand.setNoPrints();
         var hostname = hostnameCommand.call();
         System.out.printf("%s, %s%n", Sugar.first(hostname.getOutput()), hostname);

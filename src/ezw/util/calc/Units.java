@@ -24,7 +24,7 @@ public abstract class Units {
                     .orElse(Sugar.last(units)).describe(value, Sugar.first(units));
         }
 
-        default String describe(double value, Unit smallestUnit) {
+        private String describe(double value, Unit smallestUnit) {
             double unitValue = Scale.getDefault().apply(value / getValue());
             return String.format("%s %s", this == smallestUnit ? Long.toString((long) unitValue) :
                     Double.toString(unitValue), name());

@@ -10,6 +10,8 @@ import java.util.List;
  * classpath as the current JVM, with optional parameters and arguments.
  */
 public class JVM extends CommandLine {
+    private static final String executable = Path.of(System.getProperty("sun.boot.library.path"), "java").toString();
+    private static final String classpath = System.getProperty("java.class.path");
 
     /**
      * Constructs a JVM executor.
@@ -28,8 +30,7 @@ public class JVM extends CommandLine {
      * @param args Optional main arguments. Only non-null elements are used.
      */
     public JVM(boolean collectOutput, List<String> jvmParameters, Class<?> mainClass, Object... args) {
-        super(collectOutput, Sugar.flat(Path.of(System.getProperty("sun.boot.library.path"), "java").toString(),
-                jvmParameters, "-cp", System.getProperty("java.class.path"), mainClass.getName(),
+        super(collectOutput, Sugar.flat(executable, jvmParameters, "-cp", classpath, mainClass.getName(),
                 Sugar.toStrings(args)));
     }
 }
