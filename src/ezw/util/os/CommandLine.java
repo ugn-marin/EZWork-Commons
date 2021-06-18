@@ -133,7 +133,7 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
 
     /**
      * Constructs a command line.
-     * @param command The command.
+     * @param command The command. Only non-null elements are used.
      */
     public CommandLine(String... command) {
         this(true, (Object[]) command);
@@ -142,7 +142,7 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
     /**
      * Constructs a command line.
      * @param collectOutput If true, the standard output lines are collected, else ignored. Default is true.
-     * @param command The command.
+     * @param command The command. Only non-null elements are used.
      */
     public CommandLine(boolean collectOutput, Object... command) {
         var commandList = Arrays.stream(Sugar.requireNonEmpty(command)).filter(Objects::nonNull).map(Object::toString)

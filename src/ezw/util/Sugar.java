@@ -6,6 +6,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * Various syntax sugar utilities.
@@ -152,21 +154,66 @@ public abstract class Sugar {
     }
 
     /**
-     * Returns a flat union array of the objects passed. That is, for any member being an array or an iterable itself,
-     * the inner members are added to the union. The order of the items is preserved.
+     * Returns a flat union array of the objects passed. That is, for any member being an array, an iterable or a stream
+     * itself, the inner members are added to the flat union. The order of the items is preserved as in the members.
      * @param objects An array of objects.
      * @return A flat union array of the objects passed.
      */
     public static Object[] flat(Object... objects) {
-        List<Object> flat = new ArrayList<>(Objects.requireNonNull(objects, "Array is null.").length);
-        for (Object o : objects) {
+        return Arrays.stream(Objects.requireNonNull(objects, "Array is null.")).flatMap(o -> {
             if (o instanceof Object[])
-                flat.addAll(Arrays.asList((Object[]) o));
+                return Stream.of((Object[]) o);
             else if (o instanceof Iterable)
-                ((Iterable<?>) o).forEach(flat::add);
+                return StreamSupport.stream(((Iterable<?>) o).spliterator(), false);
+            else if (o instanceof Stream)
+                return (Stream<?>) o;
             else
-                flat.add(o);
+                return Stream.of(o);
+        }).toArray();
+    }
+
+    /**
+     * Constructs a strings array containing the result of <code>toString</code> for each non-null array member.
+     * @param array The array.
+     * @param <T> The members type.
+     * @return The strings array.
+     */
+    public static <T> String[] toStrings(T[] array) {
+        return Arrays.stream(Objects.requireNonNull(array, "Array is null.")).filter(Objects::nonNull)
+                .map(Objects::toString).toArray(String[]::new);
+    }
+
+    /**
+     * Removes all instances of all substrings listed from the text.
+     * @param text The text.
+     * @param substrings The substrings to remove.
+     * @return The resulting string.
+     */
+    public static String remove(String text, String... substrings) {
+        return replace(text, toStrings(Arrays.stream(requireNoneNull(substrings)).flatMap(s -> Stream.of(s, ""))
+                .toArray()));
+    }
+
+    /**
+     * Performs an ordered set of replacements on the text, replacing the first string with the second, the third with
+     * the forth and so on. Each replacement is repeated as long as instances of the target string still exist in the
+     * text, in order to support repetitive patterns.
+     * @param text The text.
+     * @param replacements The target and replacement substrings (must be even).
+     * @return The resulting string.
+     */
+    public static String replace(String text, String... replacements) {
+        if (requireNoneNull(replacements).length % 2 != 0)
+            throw new IllegalArgumentException("The replacements array length must be even.");
+        for (int i = 0; i < replacements.length; i += 2) {
+            String target = replacements[i];
+            String replacement = replacements[i + 1];
+            if (target.equals(replacement))
+                continue;
+            while (text.contains(target)) {
+                text = text.replace(target, replacement);
+            }
         }
-        return flat.toArray();
+        return text;
     }
 }
