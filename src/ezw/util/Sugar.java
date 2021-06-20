@@ -104,9 +104,10 @@ public abstract class Sugar {
     }
 
     /**
-     * Validates that the array is not null or empty, and every one of its members is not null.<br>
-     * Equivalent to:<br><code><pre>
-     * requireNonEmpty(requireNoneNull(objects));</pre></code>
+     * Validates that the array is not null or empty, and every one of its members is not null. Equivalent to:<br>
+     * <pre>
+     * requireNonEmpty(requireNoneNull(objects));
+     * </pre>
      * @param objects The array.
      * @param <T> The members type.
      * @return The array.
@@ -116,9 +117,10 @@ public abstract class Sugar {
     }
 
     /**
-     * Validates that the list is not null or empty, and every one of its members is not null.<br>
-     * Equivalent to:<br><code><pre>
-     * requireNonEmpty(requireNoneNull(objects));</pre></code>
+     * Validates that the list is not null or empty, and every one of its members is not null. Equivalent to:<br>
+     * <pre>
+     * requireNonEmpty(requireNoneNull(objects));
+     * </pre>
      * @param objects The list.
      * @param <T> The members type.
      * @return The list.
