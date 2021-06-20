@@ -80,7 +80,7 @@ public abstract class Interruptible {
 
     /**
      * Runs the object's <code>wait</code> method, wrapping the <code>InterruptedException</code> in an
-     * <code>InterruptedRuntimeException</code>. Equivalent to:<br>
+     * <code>InterruptedRuntimeException</code>. Equivalent to:
      * <pre>
      * Interruptible.run(object::wait);
      * </pre>
@@ -93,7 +93,7 @@ public abstract class Interruptible {
 
     /**
      * Runs the <code>sleep</code> method, wrapping the <code>InterruptedException</code> in an
-     * <code>InterruptedRuntimeException</code>. Equivalent to:<br>
+     * <code>InterruptedRuntimeException</code>. Equivalent to:
      * <pre>
      * Interruptible.run(() -> Thread.sleep(millis));
      * </pre>
@@ -116,7 +116,7 @@ public abstract class Interruptible {
 
     /**
      * Validates the interrupted status of the thread, and throws InterruptedRuntimeException if set. The interrupted
-     * status of the thread is unaffected by this method. Equivalent to:<br>
+     * status of the thread is unaffected by this method. Equivalent to:
      * <pre>
      * Interruptible.run(Interruptible::validateInterrupted);
      * </pre>
