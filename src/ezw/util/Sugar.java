@@ -105,6 +105,25 @@ public abstract class Sugar {
     }
 
     /**
+     * Throws the throwable as an exception, or as Error if is an Error.
+     * @param throwable A throwable.
+     * @throws Exception The throwable if not null, thrown as is if instance of Exception or Error, or wrapped in a new
+     * UndeclaredThrowableException otherwise. If already an UndeclaredThrowableException, the cause is unwrapped and
+     * thrown by the same logic.
+     */
+    public static void throwIfNonNull(Throwable throwable) throws Exception {
+        if (throwable == null)
+            return;
+        if (throwable instanceof Error)
+            throw (Error) throwable;
+        if (throwable instanceof UndeclaredThrowableException)
+            throwIfNonNull(throwable.getCause());
+        if (throwable instanceof Exception)
+            throw (Exception) throwable;
+        throw new UndeclaredThrowableException(throwable);
+    }
+
+    /**
      * Validates that the array is not null or empty.
      * @param objects The array.
      * @param <T> The members type.
