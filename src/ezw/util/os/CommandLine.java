@@ -135,8 +135,8 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
      * Constructs a command line.
      * @param command The command. Only non-null elements are used.
      */
-    public CommandLine(String... command) {
-        this(true, (Object[]) command);
+    public CommandLine(Object... command) {
+        this(true, command);
     }
 
     /**
@@ -145,8 +145,7 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
      * @param command The command. Only non-null elements are used.
      */
     public CommandLine(boolean collectOutput, Object... command) {
-        var commandList = Arrays.stream(Sugar.requireNonEmpty(command)).filter(Objects::nonNull).map(Object::toString)
-                .collect(Collectors.toList());
+        var commandList = List.of(Sugar.toStrings(command));
         if (commandList.isEmpty())
             throw new IllegalArgumentException("No valid command components.");
         processBuilder = new ProcessBuilder(commandList);
