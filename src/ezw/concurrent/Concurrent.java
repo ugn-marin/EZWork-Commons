@@ -18,7 +18,7 @@ public abstract class Concurrent {
      * @return The task's future.
      */
     public static Future<Void> calculate(CallableRunnable task) {
-        return calculate(task.toCallable());
+        return calculate(task.toVoidCallable());
     }
 
     /**

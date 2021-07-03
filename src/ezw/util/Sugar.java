@@ -1,5 +1,8 @@
 package ezw.util;
 
+import ezw.util.function.UnsafeConsumer;
+
+import java.lang.reflect.UndeclaredThrowableException;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
@@ -47,6 +50,77 @@ public abstract class Sugar {
         Objects.requireNonNull(callable, "Callable is null.");
         Objects.requireNonNull(success, "Success predicate is null.");
         return orElse(() -> success.test(callable.call()), e -> false);
+    }
+
+    /**
+     * Repeats a runnable call.
+     * @param times The number of times to repeat.
+     * @param runnable The runnable.
+     */
+    public static void repeat(int times, Runnable runnable) {
+        Objects.requireNonNull(runnable, "Runnable is null.");
+        for (int i = 0; i < times; i++) {
+            runnable.run();
+        }
+    }
+
+    /**
+     * Produces and accepts values into the consumer as long as they pass the predicate.
+     * @param callable The callable producing the values.
+     * @param consumer The values consumer.
+     * @param predicate The predicate testing the values.
+     * @param <T> The values type.
+     * @throws Exception Any exception thrown by the implementations.
+     */
+    public static <T> void acceptWhile(Callable<T> callable, UnsafeConsumer<T> consumer, Predicate<T> predicate)
+            throws Exception {
+        Objects.requireNonNull(consumer, "Consumer is null.");
+        Objects.requireNonNull(predicate, "Predicate is null.");
+        T value = Objects.requireNonNull(callable, "Callable is null.").call();
+        while (predicate.test(value)) {
+            consumer.accept(value);
+            value = callable.call();
+        }
+    }
+
+    /**
+     * Wraps a callable implementation in a Supplier throwing sneaky.
+     */
+    public static <T> Supplier<T> toSupplier(Callable<T> callable) {
+        Objects.requireNonNull(callable, "Callable is null.");
+        return () -> {
+            try {
+                return callable.call();
+            } catch (Exception e) {
+                throw sneaky(e);
+            }
+        };
+    }
+
+    /**
+     * Returns the exception as is if runtime exception, else as undeclared.
+     */
+    public static RuntimeException sneaky(Exception e) {
+        return e instanceof RuntimeException ? (RuntimeException) e : new UndeclaredThrowableException(e);
+    }
+
+    /**
+     * Throws the throwable as an exception, or as Error if is an Error.
+     * @param throwable A throwable.
+     * @throws Exception The throwable if not null, thrown as is if instance of Exception or Error, or wrapped in a new
+     * UndeclaredThrowableException otherwise. If already an UndeclaredThrowableException, the cause is unwrapped and
+     * thrown by the same logic.
+     */
+    public static void throwIfNonNull(Throwable throwable) throws Exception {
+        if (throwable == null)
+            return;
+        if (throwable instanceof Error)
+            throw (Error) throwable;
+        if (throwable instanceof UndeclaredThrowableException)
+            throwIfNonNull(throwable.getCause());
+        if (throwable instanceof Exception)
+            throw (Exception) throwable;
+        throw new UndeclaredThrowableException(throwable);
     }
 
     /**
