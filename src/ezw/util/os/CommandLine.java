@@ -10,7 +10,6 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
 
 /**
  * An OS command line process executor. Designed as a simplified ProcessBuilder wrapper, to be used directly or by
