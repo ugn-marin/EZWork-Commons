@@ -98,7 +98,7 @@ public abstract class Sugar {
     }
 
     /**
-     * Returns the throwable as is if runtime exception, else as undeclared.
+     * Returns the exception as is if runtime exception, else as undeclared.
      */
     public static RuntimeException sneaky(Exception e) {
         return e instanceof RuntimeException ? (RuntimeException) e : new UndeclaredThrowableException(e);
