@@ -38,7 +38,7 @@ public abstract class Concurrent {
      * @throws InterruptedException If interrupted.
      */
     public static void parallel(Runnable... tasks) throws ExecutionException, InterruptedException {
-        var pool = Executors.newFixedThreadPool(Sugar.requireNoneNull(Sugar.requireNonEmpty(tasks)).length);
+        var pool = Executors.newFixedThreadPool(Sugar.requireFull(tasks).length);
         try {
             getAll(Arrays.stream(tasks).map(pool::submit).toArray(Future[]::new));
         } finally {
@@ -48,13 +48,16 @@ public abstract class Concurrent {
 
     /**
      * Calls <code>get</code> for each future. In other words, waits if necessary for all futures' tasks completion.
+     * Recursive: If any future result is a future itself, waits for it as well.
      * @param futures The futures.
      * @throws ExecutionException If any of the futures' computation failed.
      * @throws InterruptedException If interrupted.
      */
     public static void getAll(Future<?>... futures) throws ExecutionException, InterruptedException {
-        for (var future : futures) {
-            future.get();
+        for (var future : Sugar.requireFull(futures)) {
+            var result = future.get();
+            if (result instanceof Future)
+                getAll((Future<?>) result);
         }
     }
 
