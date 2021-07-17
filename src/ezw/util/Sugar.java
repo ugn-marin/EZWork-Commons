@@ -59,7 +59,7 @@ public abstract class Sugar {
      */
     public static void repeat(int times, Runnable runnable) {
         Objects.requireNonNull(runnable, "Runnable is null.");
-        for (int i = 0; i < times; i++) {
+        for (int i = 0; i < requireRange(times, 0, null); i++) {
             runnable.run();
         }
     }
@@ -84,7 +84,8 @@ public abstract class Sugar {
     }
 
     /**
-     * Wraps a callable implementation in a Supplier throwing sneaky.
+     * Wraps a callable implementation in a Supplier throwing sneaky. To define an <i>on exception</i> value calculation
+     * use the <code>orElse</code> method.
      */
     public static <T> Supplier<T> toSupplier(Callable<T> callable) {
         Objects.requireNonNull(callable, "Callable is null.");
@@ -121,6 +122,25 @@ public abstract class Sugar {
         if (throwable instanceof Exception)
             throw (Exception) throwable;
         throw new UndeclaredThrowableException(throwable);
+    }
+
+    /**
+     * Validates that the value is within the range. Only validated against the non-null range arguments.
+     * @param value The number value.
+     * @param min The range minimum allowed (optional).
+     * @param max The range maximum allowed (optional).
+     * @param <N> The number type.
+     * @return The value if in range.
+     * @throws NullPointerException If the value is null.
+     * @throws IllegalArgumentException If the value is not in range.
+     */
+    public static <N extends Number> N requireRange(N value, N min, N max) {
+        Objects.requireNonNull(value, "Value is null.");
+        if (min != null && value.doubleValue() < min.doubleValue())
+            throw new IllegalArgumentException("Value is smaller than the minimum " + min + ".");
+        if (max != null && value.doubleValue() > max.doubleValue())
+            throw new IllegalArgumentException("Value is greater than the maximum " + max + ".");
+        return value;
     }
 
     /**
@@ -178,7 +198,7 @@ public abstract class Sugar {
     }
 
     /**
-     * Validates that the array is not null or empty, and every one of its members is not null. Equivalent to:
+     * Validates that the array is not null or empty, and none of its members is null. Equivalent to:
      * <pre>
      * requireNonEmpty(requireNoneNull(objects));
      * </pre>
@@ -191,7 +211,7 @@ public abstract class Sugar {
     }
 
     /**
-     * Validates that the list is not null or empty, and every one of its members is not null. Equivalent to:
+     * Validates that the list is not null or empty, and none of its members is null. Equivalent to:
      * <pre>
      * requireNonEmpty(requireNoneNull(objects));
      * </pre>
