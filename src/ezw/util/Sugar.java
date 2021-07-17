@@ -84,7 +84,8 @@ public abstract class Sugar {
     }
 
     /**
-     * Wraps a callable implementation in a Supplier throwing sneaky.
+     * Wraps a callable implementation in a Supplier throwing sneaky. To define an <i>on exception</i> value calculation
+     * use the <code>orElse</code> method.
      */
     public static <T> Supplier<T> toSupplier(Callable<T> callable) {
         Objects.requireNonNull(callable, "Callable is null.");
