@@ -224,11 +224,11 @@ public abstract class Sugar {
     }
 
     /**
-     * Returns optional of the first non-null object.
+     * Returns stream of all non-null objects.
      */
     @SafeVarargs
-    public static <T> Optional<T> firstNonNull(T... objects) {
-        return Arrays.stream(Objects.requireNonNull(objects, "Array is null.")).filter(Objects::nonNull).findFirst();
+    public static <T> Stream<T> nonNull(T... objects) {
+        return Arrays.stream(Objects.requireNonNull(objects, "Array is null.")).filter(Objects::nonNull);
     }
 
     /**
