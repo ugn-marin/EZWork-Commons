@@ -1,6 +1,7 @@
 package ezw.concurrent;
 
 import ezw.util.Sugar;
+import ezw.util.function.UnsafeRunnable;
 
 import java.util.Arrays;
 import java.util.concurrent.*;
@@ -13,11 +14,11 @@ public abstract class Concurrent {
     private Concurrent() {}
 
     /**
-     * Submits a callable runnable into the commonPool.
+     * Submits an unsafe runnable into the commonPool.
      * @param task A short calculation task.
      * @return The task's future.
      */
-    public static Future<Void> calculate(CallableRunnable task) {
+    public static Future<Void> calculate(UnsafeRunnable task) {
         return calculate(task.toVoidCallable());
     }
 
