@@ -108,13 +108,13 @@ public class ElasticMatrix<T> {
 
     public List<T> removeRow(int y) {
         if (y >= rows())
-            throw new IndexOutOfBoundsException("Row " + y + " doesn't exist");
+            throw new IndexOutOfBoundsException("Row " + y + " doesn't exist in a total of " + rows());
         return content.stream().map(column -> column.remove(y)).collect(Collectors.toList());
     }
 
     public List<T> removeColumn(int x) {
         if (x >= content.size())
-            throw new IndexOutOfBoundsException("Column " + x + " doesn't exist");
+            throw new IndexOutOfBoundsException("Column " + x + " doesn't exist in a total of " + content.size());
         return content.remove(x);
     }
 
@@ -129,6 +129,16 @@ public class ElasticMatrix<T> {
 
     public List<List<T>> getColumns() {
         return content.stream().map(ArrayList::new).collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        ElasticMatrix<?> that = (ElasticMatrix<?>) o;
+        return size().equals(that.size()) && content.equals(that.content);
     }
 
     @Override

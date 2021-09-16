@@ -717,6 +717,32 @@ public class ElasticMatrixTest {
     }
 
     @Test
+    void equals() {
+        var matrix1 = new ElasticMatrix<Character>();
+        matrix1.addRow('a', 'b');
+        matrix1.addRow('c', 'd');
+        var matrix2 = new ElasticMatrix<Character>();
+        matrix2.addRow('a', 'b');
+        matrix2.addRow('c', 'd');
+        Assertions.assertEquals(matrix1, matrix2);
+        Assertions.assertEquals('d', matrix2.set(1, 1, 'a'));
+        Assertions.assertNotEquals(matrix1, matrix2);
+    }
+
+    @Test
+    void unmodifiable() {
+        var matrix = new ElasticMatrix<Character>();
+        matrix.addRow('a', 'b');
+        matrix.addRow('c', 'd');
+        matrix.getRow(0).add('X');
+        matrix.getRows().get(0).add('X');
+        matrix.getColumn(0).add('Y');
+        matrix.getColumns().get(0).add('Y');
+        Assertions.assertTrue(matrix.size().equals(2, 2));
+        assertData("a,b|c,d", matrix);
+    }
+
+    @Test
     void badIndexes() {
         var matrix = new ElasticMatrix<Character>();
         assertBadIndex(() -> matrix.get(0, 0));
