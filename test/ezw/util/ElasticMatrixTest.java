@@ -18,7 +18,7 @@ public class ElasticMatrixTest {
 
     private void assertData(String expected, ElasticMatrix<?> matrix) {
         System.out.println(matrix);
-        Assertions.assertEquals(expected, matrix.toString(",", "|", "null", null));
+        Assertions.assertEquals(expected, matrix.toString(",", "|", "null", false));
         var columns = matrix.getColumns();
         if (!columns.isEmpty()) {
             int rows = matrix.size().getY();

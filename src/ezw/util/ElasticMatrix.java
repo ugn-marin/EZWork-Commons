@@ -5,88 +5,163 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * A matrix of flexible size, supporting spreadsheet-like manipulation of cells, rows and columns.
+ * @param <T> The type of elements in the matrix.
+ */
 public class ElasticMatrix<T> {
     private final List<List<T>> content = new ArrayList<>();
 
+    /**
+     * Returns true if the matrix size is [0, 0].
+     */
     public boolean isEmpty() {
         return content.isEmpty();
     }
 
-    public Coordinate size() {
-        return new Coordinate(content.size(), rows());
+    /**
+     * Returns the matrix size. Null cells, including whole rows/columns of nulls, are included. A zero coordinate
+     * always means the other coordinate is also zero.
+     */
+    public Coordinates size() {
+        return new Coordinates(content.size(), rows());
     }
 
     private int rows() {
         return content.isEmpty() ? 0 : Sugar.first(content).size();
     }
 
-    public T get(Coordinate coordinate) {
-        return get(coordinate.x, coordinate.y);
+    /**
+     * Returns the cell at the coordinates provided.
+     * @throws IndexOutOfBoundsException If a coordinate is out of bounds.
+     */
+    public T get(Coordinates coordinates) {
+        return get(coordinates.x, coordinates.y);
     }
 
+    /**
+     * Returns the cell at the coordinates provided.
+     * @throws IndexOutOfBoundsException If a coordinate is out of bounds.
+     */
     public T get(int x, int y) {
         return content.get(x).get(y);
     }
 
-    public T set(Coordinate coordinate, T element) {
-        return set(coordinate.x, coordinate.y, element);
+    /**
+     * Updates the cell at the coordinates provided.
+     * @throws IndexOutOfBoundsException If a coordinate is out of bounds.
+     */
+    public T set(Coordinates coordinates, T element) {
+        return set(coordinates.x, coordinates.y, element);
     }
 
+    /**
+     * Updates the cell at the coordinates provided.
+     * @throws IndexOutOfBoundsException If a coordinate is out of bounds.
+     */
     public T set(int x, int y, T element) {
         return content.get(x).set(y, element);
     }
 
+    /**
+     * Returns the row at the specified index. Modifying the result will have no effect on the matrix.
+     * @throws IndexOutOfBoundsException If the index is out of bounds.
+     */
     public List<T> getRow(int y) {
         return getRows().get(y);
     }
 
+    /**
+     * Returns the first row. Modifying the result will have no effect on the matrix.
+     */
     public List<T> getFirstRow() {
         return getRow(0);
     }
 
+    /**
+     * Returns the last row. Modifying the result will have no effect on the matrix.
+     */
     public List<T> getLastRow() {
         return getRow(rows() - 1);
     }
 
+    /**
+     * Returns the column at the specified index. Modifying the result will have no effect on the matrix.
+     * @throws IndexOutOfBoundsException If the index is out of bounds.
+     */
     public List<T> getColumn(int x) {
         return getColumns().get(x);
     }
 
+    /**
+     * Returns the first column. Modifying the result will have no effect on the matrix.
+     */
     public List<T> getFirstColumn() {
         return getColumn(0);
     }
 
+    /**
+     * Returns the last column. Modifying the result will have no effect on the matrix.
+     */
     public List<T> getLastColumn() {
         return getColumn(content.size() - 1);
     }
 
+    /**
+     * Returns true if the matrix contains the element.
+     */
     public boolean contains(T element) {
         return indexOf(element) != null;
     }
 
-    public Coordinate indexOf(T element) {
+    /**
+     * Returns the coordinates of the first occurrence of the element (smallest x and y), or null if not found.
+     */
+    public Coordinates indexOf(T element) {
         for (int x = 0; x < content.size(); x++) {
             int y = content.get(x).indexOf(element);
             if (y >= 0)
-                return new Coordinate(x, y);
+                return new Coordinates(x, y);
         }
         return null;
     }
 
-    public Coordinate lastIndexOf(T element) {
+    /**
+     * Returns the coordinates of the last occurrence of the element (greatest x and y), or null if not found.
+     */
+    public Coordinates lastIndexOf(T element) {
         for (int x = content.size() - 1; x >= 0; x--) {
             int y = content.get(x).lastIndexOf(element);
             if (y >= 0)
-                return new Coordinate(x, y);
+                return new Coordinates(x, y);
         }
         return null;
     }
 
+    /**
+     * Adds a row at the end of the matrix, stretching it by 1 row.
+     * @param row Optional values of the new row. If empty or smaller than the number of columns in the matrix, the
+     *            missing values are padded with nulls. If greater than the number of columns in the matrix, including
+     *            if the matrix is empty, it is stretched to accommodate the new value(s) by adding columns, padded with
+     *            nulls where necessary. If both the row and matrix are empty, the matrix is stretched to size [1, 1],
+     *            containing null.
+     */
     @SafeVarargs
     public final void addRow(T... row) {
         addRowBefore(rows(), row);
     }
 
+    /**
+     * Adds a row before the specified row, stretching the matrix by 1 row, effectively making the new one row y and
+     * shifting subsequent rows (if any) by 1.
+     * @param y The row index. May be equal to the rows number - the row will be added at the end of the matrix.
+     * @param row Optional values of the new row. If empty or smaller than the number of columns in the matrix, the
+     *            missing values are padded with nulls. If greater than the number of columns in the matrix, including
+     *            if the matrix is empty, it is stretched to accommodate the new value(s) by adding columns, padded with
+     *            nulls where necessary. If both the row and matrix are empty, the matrix is stretched to size [1, 1],
+     *            containing null.
+     * @throws IndexOutOfBoundsException If the index is out of bounds.
+     */
     @SafeVarargs
     public final void addRowBefore(int y, T... row) {
         if (y > rows())
@@ -102,16 +177,46 @@ public class ElasticMatrix<T> {
             removeRow(y + 1);
     }
 
+    /**
+     * Adds a row after the specified row, stretching the matrix by 1 row, effectively making the new one row y + 1 and
+     * shifting subsequent rows (if any) by 1.
+     * @param y The row index.
+     * @param row Optional values of the new row. If empty or smaller than the number of columns in the matrix, the
+     *            missing values are padded with nulls. If greater than the number of columns in the matrix, including
+     *            if the matrix is empty, it is stretched to accommodate the new value(s) by adding columns, padded with
+     *            nulls where necessary.
+     * @throws IndexOutOfBoundsException If the index is out of bounds.
+     */
     @SafeVarargs
     public final void addRowAfter(int y, T... row) {
         addRowBefore(y + 1, row);
     }
 
+    /**
+     * Adds a column at the end of the matrix, stretching it by 1 column.
+     * @param column Optional values of the new column. If empty or smaller than the number of rows in the matrix, the
+     *               missing values are padded with nulls. If greater than the number of rows in the matrix, including
+     *               if the matrix is empty, it is stretched to accommodate the new value(s) by adding rows, padded with
+     *               nulls where necessary. If both the column and matrix are empty, the matrix is stretched to size
+     *               [1, 1], containing null.
+     */
     @SafeVarargs
     public final void addColumn(T... column) {
         addColumnBefore(content.size(), column);
     }
 
+    /**
+     * Adds a column before the specified column, stretching the matrix by 1 column, effectively making the new one
+     * column x and shifting subsequent columns (if any) by 1.
+     * @param x The column index. May be equal to the columns number - the column will be added at the end of the
+     *          matrix.
+     * @param column Optional values of the new column. If empty or smaller than the number of rows in the matrix, the
+     *               missing values are padded with nulls. If greater than the number of rows in the matrix, including
+     *               if the matrix is empty, it is stretched to accommodate the new value(s) by adding rows, padded with
+     *               nulls where necessary. If both the column and matrix are empty, the matrix is stretched to size
+     *               [1, 1], containing null.
+     * @throws IndexOutOfBoundsException If the index is out of bounds.
+     */
     @SafeVarargs
     public final void addColumnBefore(int x, T... column) {
         if (x > content.size())
@@ -127,6 +232,16 @@ public class ElasticMatrix<T> {
             removeColumn(x + 1);
     }
 
+    /**
+     * Adds a column after the specified column, stretching the matrix by 1 column, effectively making the new one
+     * column x + 1 and shifting subsequent columns (if any) by 1.
+     * @param x The column index.
+     * @param column Optional values of the new column. If empty or smaller than the number of rows in the matrix, the
+     *               missing values are padded with nulls. If greater than the number of rows in the matrix, including
+     *               if the matrix is empty, it is stretched to accommodate the new value(s) by adding rows, padded with
+     *               nulls where necessary.
+     * @throws IndexOutOfBoundsException If the index is out of bounds.
+     */
     @SafeVarargs
     public final void addColumnAfter(int x, T... column) {
         addColumnBefore(x + 1, column);
@@ -138,44 +253,78 @@ public class ElasticMatrix<T> {
         return list;
     }
 
+    /**
+     * Removes the row at the specified index, and shrinks the matrix by 1 row.
+     * @param y The row index.
+     * @return The removed row.
+     * @throws IndexOutOfBoundsException If the index is out of bounds.
+     */
     public List<T> removeRow(int y) {
         if (y >= rows())
             throw new IndexOutOfBoundsException("Row " + y + " doesn't exist in a total of " + rows());
         return content.stream().map(column -> column.remove(y)).collect(Collectors.toList());
     }
 
+    /**
+     * Removes the column at the specified index, and shrinks the matrix by 1 column.
+     * @param x The column index.
+     * @return The removed column.
+     * @throws IndexOutOfBoundsException If the index is out of bounds.
+     */
     public List<T> removeColumn(int x) {
         if (x >= content.size())
             throw new IndexOutOfBoundsException("Column " + x + " doesn't exist in a total of " + content.size());
         return content.remove(x);
     }
 
+    /**
+     * Clears the matrix elements and shrinks it to [0, 0].
+     */
     public void clear() {
         content.clear();
     }
 
-    public void swap(Coordinate coordinate1, Coordinate coordinate2) {
-        swap(coordinate1.x, coordinate1.y, coordinate2.x, coordinate2.y);
+    /**
+     * Swaps between the two cells.
+     * @throws IndexOutOfBoundsException If a coordinate is out of bounds.
+     */
+    public void swap(Coordinates coordinates1, Coordinates coordinates2) {
+        swap(coordinates1.x, coordinates1.y, coordinates2.x, coordinates2.y);
     }
 
+    /**
+     * Swaps between the two cells.
+     * @throws IndexOutOfBoundsException If a coordinate is out of bounds.
+     */
     public void swap(int x1, int y1, int x2, int y2) {
         T temp = get(x1, y1);
         set(x1, y1, get(x2, y2));
         set(x2, y2, temp);
     }
 
+    /**
+     * Swaps between the two rows.
+     * @throws IndexOutOfBoundsException If an index is out of bounds.
+     */
     public void swapRows(int y1, int y2) {
         for (int x = 0; x < content.size(); x++) {
             swap(x, y1, x, y2);
         }
     }
 
+    /**
+     * Swaps between the two columns.
+     * @throws IndexOutOfBoundsException If an index is out of bounds.
+     */
     public void swapColumns(int x1, int x2) {
         for (int y = 0; y < rows(); y++) {
             swap(x1, y, x2, y);
         }
     }
 
+    /**
+     * Returns the matrix cells as an ordered list of rows. Modifying the result will have no effect on the matrix.
+     */
     public List<List<T>> getRows() {
         List<List<T>> rows = new ArrayList<>();
         for (int y = 0; y < rows(); y++) {
@@ -185,6 +334,9 @@ public class ElasticMatrix<T> {
         return rows;
     }
 
+    /**
+     * Returns the matrix cells as an ordered list of columns. Modifying the result will have no effect on the matrix.
+     */
     public List<List<T>> getColumns() {
         return content.stream().map(ArrayList::new).collect(Collectors.toList());
     }
@@ -201,10 +353,19 @@ public class ElasticMatrix<T> {
 
     @Override
     public String toString() {
-        return toString(" ", System.lineSeparator(), "", ' ');
+        return toString(" ", System.lineSeparator(), "", true);
     }
 
-    public String toString(String cellsDelimiter, String rowsDelimiter, String nullDefault, Character tabFiller) {
+    /**
+     * Returns a custom string representation of the matrix using the provided parameters.
+     * @param cellsDelimiter The delimiter between cells in a row. Default is space.
+     * @param rowsDelimiter The delimiter between rows. Default is the line separator.
+     * @param nullDefault The representation of null cells. Default is empty string.
+     * @param tabFiller True if tab-like spacing in cells is required. Generally speaking, should be true if the rows
+     *                  delimiter is newline. Default is true.
+     * @return The string representation of the matrix.
+     */
+    public String toString(String cellsDelimiter, String rowsDelimiter, String nullDefault, boolean tabFiller) {
         Sugar.requireNoneNull(List.of(cellsDelimiter, rowsDelimiter, nullDefault));
         String[][] strings = new String[content.size()][rows()];
         int[] maxLength = new int[content.size()];
@@ -223,25 +384,28 @@ public class ElasticMatrix<T> {
                 if (x > 0)
                     row.append(cellsDelimiter);
                 row.append(strings[x][y]);
-                if (tabFiller != null)
-                    row.append(tabFiller.toString().repeat(maxLength[x] - strings[x][y].length()));
+                if (tabFiller)
+                    row.append(" ".repeat(maxLength[x] - strings[x][y].length()));
             }
             sb.append(row.toString().stripTrailing());
         }
         return sb.toString().stripTrailing();
     }
 
-    public static class Coordinate {
+    /**
+     * X and Y coordinates.
+     */
+    public static class Coordinates {
         private final int x;
         private final int y;
 
-        public Coordinate(int x, int y) {
+        private Coordinates(int x, int y) {
             this.x = x;
             this.y = y;
         }
 
-        public static Coordinate of(int x, int y) {
-            return new Coordinate(x, y);
+        public static Coordinates of(int x, int y) {
+            return new Coordinates(x, y);
         }
 
         public int getX() {
@@ -258,7 +422,7 @@ public class ElasticMatrix<T> {
                 return true;
             if (o == null || getClass() != o.getClass())
                 return false;
-            return ((Coordinate) o).equals(x, y);
+            return ((Coordinates) o).equals(x, y);
         }
 
         public boolean equals(int x, int y) {
