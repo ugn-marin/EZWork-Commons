@@ -13,7 +13,7 @@ import java.util.function.Supplier;
  */
 public class Lazy<T> implements Supplier<T> {
     private final Supplier<T> valueSupplier;
-    private boolean isCalculated;
+    private volatile boolean isCalculated;
     private T value;
 
     /**
@@ -36,7 +36,7 @@ public class Lazy<T> implements Supplier<T> {
     /**
      * Calculates the value if called for the first time and returns it, else returns the previously calculated value.
      * Upon calculation marks this instance as <i>calculated</i>, unless the calculation fails, in which case the method
-     * will continue to fail until a value is successfully calculated.
+     * will continue to fail on subsequent calls until a value is successfully calculated.
      */
     @Override
     public T get() {
