@@ -1,7 +1,7 @@
 package ezw.concurrent;
 
 /**
- * A lazy runnable, calculating if and only if it hasn't already.
+ * A lazy runnable, calculating if and only if it hasn't been already.
  */
 public class LazyRunnable implements Runnable {
     private final Lazy<Void> lazy;
