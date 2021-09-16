@@ -40,12 +40,15 @@ public class ElasticMatrix<T> {
 
     @SafeVarargs
     public final void addRowBefore(int y, T... row) {
-        if (content.isEmpty())
-            content.add(new ArrayList<>());
+        boolean wasEmpty = content.isEmpty();
+        if (wasEmpty)
+            content.add(fill(1));
         Sugar.repeat(Math.max(row.length - content.size(), 0), this::addColumn);
         for (int x = 0; x < content.size(); x++) {
             content.get(x).add(y, x < row.length ? row[x] : null);
         }
+        if (wasEmpty)
+            removeRow(y + 1);
     }
 
     @SafeVarargs
@@ -60,12 +63,15 @@ public class ElasticMatrix<T> {
 
     @SafeVarargs
     public final void addColumnBefore(int x, T... column) {
+        boolean wasEmpty = content.isEmpty();
         Sugar.repeat(Math.max(column.length - rows(), 0), this::addRow);
         var columnContent = fill(Math.max(rows(), 1));
         for (int y = 0; y < rows() && y < column.length; y++) {
             columnContent.set(y, column[y]);
         }
         content.add(x, columnContent);
+        if (wasEmpty && column.length > 0)
+            removeColumn(x + 1);
     }
 
     @SafeVarargs
@@ -77,6 +83,14 @@ public class ElasticMatrix<T> {
         List<T> list = new ArrayList<>();
         Sugar.repeat(size, () -> list.add(null));
         return list;
+    }
+
+    public List<T> removeRow(int y) {
+        return content.stream().map(column -> column.remove(y)).collect(Collectors.toList());
+    }
+
+    public List<T> removeColumn(int x) {
+        return content.remove(x);
     }
 
     public List<List<T>> getRows() {
@@ -94,10 +108,11 @@ public class ElasticMatrix<T> {
 
     @Override
     public String toString() {
-        return toString(" ", System.lineSeparator(), "");
+        return toString(" ", System.lineSeparator(), "", ' ');
     }
 
-    public String toString(String cellsDelimiter, String rowsDelimiter, String nullDefault) {
+    public String toString(String cellsDelimiter, String rowsDelimiter, String nullDefault, Character tabFiller) {
+        Sugar.requireNoneNull(List.of(cellsDelimiter, rowsDelimiter, nullDefault));
         String[][] strings = new String[content.size()][rows()];
         int[] maxLength = new int[content.size()];
         for (int x = 0; x < content.size(); x++) {
@@ -114,7 +129,9 @@ public class ElasticMatrix<T> {
             for (int x = 0; x < content.size(); x++) {
                 if (x > 0)
                     row.append(cellsDelimiter);
-                row.append(strings[x][y]).append(" ".repeat(maxLength[x] - strings[x][y].length()));
+                row.append(strings[x][y]);
+                if (tabFiller != null)
+                    row.append(tabFiller.toString().repeat(maxLength[x] - strings[x][y].length()));
             }
             sb.append(row.toString().stripTrailing());
         }
@@ -158,7 +175,7 @@ public class ElasticMatrix<T> {
 
         @Override
         public String toString() {
-            return '[' + x + ", " + y + ']';
+            return "[" + x + ", " + y + "]";
         }
     }
 }
