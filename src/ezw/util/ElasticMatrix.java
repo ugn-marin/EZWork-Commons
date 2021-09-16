@@ -138,6 +138,10 @@ public class ElasticMatrix<T> {
         return content.remove(x);
     }
 
+    public void clear() {
+        content.clear();
+    }
+
     public List<List<T>> getRows() {
         List<List<T>> rows = new ArrayList<>();
         for (int y = 0; y < rows(); y++) {
