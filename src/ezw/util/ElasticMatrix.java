@@ -266,6 +266,24 @@ public class ElasticMatrix<T> {
     }
 
     /**
+     * Removes the first row, and shrinks the matrix by 1 row.
+     * @return The removed row.
+     * @throws IndexOutOfBoundsException If the matrix is empty.
+     */
+    public List<T> removeFirstRow() {
+        return removeRow(0);
+    }
+
+    /**
+     * Removes the last row, and shrinks the matrix by 1 row.
+     * @return The removed row.
+     * @throws IndexOutOfBoundsException If the matrix is empty.
+     */
+    public List<T> removeLastRow() {
+        return removeRow(rows() - 1);
+    }
+
+    /**
      * Removes the column at the specified index, and shrinks the matrix by 1 column.
      * @param x The column index.
      * @return The removed column.
@@ -275,6 +293,46 @@ public class ElasticMatrix<T> {
         if (x >= content.size())
             throw new IndexOutOfBoundsException("Column " + x + " doesn't exist in a total of " + content.size());
         return content.remove(x);
+    }
+
+    /**
+     * Removes the first column, and shrinks the matrix by 1 column.
+     * @return The removed column.
+     * @throws IndexOutOfBoundsException If the matrix is empty.
+     */
+    public List<T> removeFirstColumn() {
+        return removeColumn(0);
+    }
+
+    /**
+     * Removes the last column, and shrinks the matrix by 1 column.
+     * @return The removed column.
+     * @throws IndexOutOfBoundsException If the matrix is empty.
+     */
+    public List<T> removeLastColumn() {
+        return removeColumn(content.size() - 1);
+    }
+
+    /**
+     * Removes trailing rows and/or columns where all cells are null.
+     * @param rows True if packing rows is required.
+     * @param columns True if packing columns is required.
+     */
+    public void pack(boolean rows, boolean columns) {
+        if (rows) {
+            var lastRow = getLastRow();
+            while (lastRow.stream().allMatch(Objects::isNull)) {
+                removeLastRow();
+                lastRow = getLastRow();
+            }
+        }
+        if (columns) {
+            var lastColumn = getLastColumn();
+            while (lastColumn.stream().allMatch(Objects::isNull)) {
+                removeLastColumn();
+                lastColumn = getLastColumn();
+            }
+        }
     }
 
     /**

@@ -152,14 +152,6 @@ public class ElasticMatrixTest {
         matrix.set(1, 1, 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
         assertData("a,b|c,d", matrix);
-        Assertions.assertTrue(matrix.indexOf('a').equals(0, 0));
-        Assertions.assertTrue(matrix.indexOf('b').equals(1, 0));
-        Assertions.assertTrue(matrix.indexOf('c').equals(0, 1));
-        Assertions.assertTrue(matrix.indexOf('d').equals(1, 1));
-        Assertions.assertTrue(matrix.lastIndexOf('a').equals(0, 0));
-        Assertions.assertTrue(matrix.lastIndexOf('b').equals(1, 0));
-        Assertions.assertTrue(matrix.lastIndexOf('c').equals(0, 1));
-        Assertions.assertTrue(matrix.lastIndexOf('d').equals(1, 1));
     }
 
     @Test
@@ -214,6 +206,23 @@ public class ElasticMatrixTest {
         Assertions.assertTrue(matrix.size().equals(2, 2));
         assertData("a,b|c,d", matrix);
         assertData(matrix, 'a', 'b', 'c', 'd');
+    }
+
+    @Test
+    void indexOf() {
+        var matrix = new ElasticMatrix<Character>();
+        matrix.addRow('a', 'b');
+        matrix.addRow('c', 'd');
+        Assertions.assertTrue(matrix.size().equals(2, 2));
+        assertData("a,b|c,d", matrix);
+        Assertions.assertTrue(matrix.indexOf('a').equals(0, 0));
+        Assertions.assertTrue(matrix.indexOf('b').equals(1, 0));
+        Assertions.assertTrue(matrix.indexOf('c').equals(0, 1));
+        Assertions.assertTrue(matrix.indexOf('d').equals(1, 1));
+        Assertions.assertTrue(matrix.lastIndexOf('a').equals(0, 0));
+        Assertions.assertTrue(matrix.lastIndexOf('b').equals(1, 0));
+        Assertions.assertTrue(matrix.lastIndexOf('c').equals(0, 1));
+        Assertions.assertTrue(matrix.lastIndexOf('d').equals(1, 1));
     }
 
     @Test
@@ -640,7 +649,7 @@ public class ElasticMatrixTest {
         matrix.addRow('g', 'h', 'i');
         Assertions.assertTrue(matrix.size().equals(3, 3));
         assertData("a,b,c|d,e,f|g,h,i", matrix);
-        assertData(matrix.removeRow(0), 'a', 'b', 'c');
+        assertData(matrix.removeFirstRow(), 'a', 'b', 'c');
         Assertions.assertTrue(matrix.size().equals(3, 2));
         assertData("d,e,f|g,h,i", matrix);
     }
@@ -666,7 +675,7 @@ public class ElasticMatrixTest {
         matrix.addRow('g', 'h', 'i');
         Assertions.assertTrue(matrix.size().equals(3, 3));
         assertData("a,b,c|d,e,f|g,h,i", matrix);
-        assertData(matrix.removeRow(2), 'g', 'h', 'i');
+        assertData(matrix.removeLastRow(), 'g', 'h', 'i');
         Assertions.assertTrue(matrix.size().equals(3, 2));
         assertData("a,b,c|d,e,f", matrix);
     }
@@ -679,7 +688,7 @@ public class ElasticMatrixTest {
         matrix.addRow('g', 'h', 'i');
         Assertions.assertTrue(matrix.size().equals(3, 3));
         assertData("a,b,c|d,e,f|g,h,i", matrix);
-        assertData(matrix.removeColumn(0), 'a', 'd', 'g');
+        assertData(matrix.removeFirstColumn(), 'a', 'd', 'g');
         Assertions.assertTrue(matrix.size().equals(2, 3));
         assertData("b,c|e,f|h,i", matrix);
     }
@@ -705,7 +714,7 @@ public class ElasticMatrixTest {
         matrix.addRow('g', 'h', 'i');
         Assertions.assertTrue(matrix.size().equals(3, 3));
         assertData("a,b,c|d,e,f|g,h,i", matrix);
-        assertData(matrix.removeColumn(2), 'c', 'f', 'i');
+        assertData(matrix.removeLastColumn(), 'c', 'f', 'i');
         Assertions.assertTrue(matrix.size().equals(2, 3));
         assertData("a,b|d,e|g,h", matrix);
     }
@@ -729,6 +738,54 @@ public class ElasticMatrixTest {
         assertData("b,a|a,c", matrix);
         matrix.swapColumns(0, 1);
         assertData("a,b|c,a", matrix);
+    }
+
+    @Test
+    void packRows() {
+        var matrix = new ElasticMatrix<Character>();
+        matrix.addRow('a', 'b');
+        matrix.addRow('c', 'd');
+        matrix.addRow();
+        matrix.addRow();
+        matrix.addColumn();
+        matrix.addColumn();
+        Assertions.assertTrue(matrix.size().equals(4, 4));
+        assertData("a,b,null,null|c,d,null,null|null,null,null,null|null,null,null,null", matrix);
+        matrix.pack(true, false);
+        Assertions.assertTrue(matrix.size().equals(4, 2));
+        assertData("a,b,null,null|c,d,null,null", matrix);
+    }
+
+    @Test
+    void packColumns() {
+        var matrix = new ElasticMatrix<Character>();
+        matrix.addRow('a', 'b');
+        matrix.addRow('c', 'd');
+        matrix.addRow();
+        matrix.addRow();
+        matrix.addColumn();
+        matrix.addColumn();
+        Assertions.assertTrue(matrix.size().equals(4, 4));
+        assertData("a,b,null,null|c,d,null,null|null,null,null,null|null,null,null,null", matrix);
+        matrix.pack(false, true);
+        Assertions.assertTrue(matrix.size().equals(2, 4));
+        assertData("a,b|c,d|null,null|null,null", matrix);
+    }
+
+    @Test
+    void pack() {
+        var matrix = new ElasticMatrix<Character>();
+        matrix.addRow('a', 'b');
+        matrix.addRow('c', 'd');
+        matrix.addRow();
+        matrix.addRow();
+        matrix.addColumn();
+        matrix.addColumn();
+        Assertions.assertTrue(matrix.size().equals(4, 4));
+        assertData("a,b,null,null|c,d,null,null|null,null,null,null|null,null,null,null", matrix);
+        matrix.pack(true, true);
+        Assertions.assertTrue(matrix.size().equals(2, 2));
+        assertData("a,b|c,d", matrix);
     }
 
     @Test
@@ -771,8 +828,8 @@ public class ElasticMatrixTest {
         assertBadIndex(() -> matrix.addColumnBefore(1));
         assertBadIndex(() -> matrix.addRowBefore(1, 'X'));
         assertBadIndex(() -> matrix.addColumnBefore(1, 'X'));
-        assertBadIndex(() -> matrix.removeRow(0));
-        assertBadIndex(() -> matrix.removeColumn(0));
+        assertBadIndex(matrix::removeFirstRow);
+        assertBadIndex(matrix::removeFirstColumn);
         matrix.addRow('a', 'b');
         Assertions.assertTrue(matrix.size().equals(2, 1));
         assertData("a,b", matrix);
@@ -848,7 +905,7 @@ public class ElasticMatrixTest {
         assertBadIndex(() -> matrix.addColumnBefore(1));
         assertBadIndex(() -> matrix.addRowBefore(1, 'X'));
         assertBadIndex(() -> matrix.addColumnBefore(1, 'X'));
-        assertBadIndex(() -> matrix.removeRow(0));
-        assertBadIndex(() -> matrix.removeColumn(0));
+        assertBadIndex(matrix::removeFirstRow);
+        assertBadIndex(matrix::removeFirstColumn);
     }
 }
