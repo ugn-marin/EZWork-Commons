@@ -8,6 +8,10 @@ import java.util.stream.Collectors;
 public class ElasticMatrix<T> {
     private final List<List<T>> content = new ArrayList<>();
 
+    public boolean isEmpty() {
+        return content.isEmpty();
+    }
+
     public Coordinate size() {
         return new Coordinate(content.size(), rows());
     }
@@ -16,8 +20,16 @@ public class ElasticMatrix<T> {
         return content.isEmpty() ? 0 : Sugar.first(content).size();
     }
 
+    public T get(Coordinate coordinate) {
+        return get(coordinate.x, coordinate.y);
+    }
+
     public T get(int x, int y) {
         return content.get(x).get(y);
+    }
+
+    public T set(Coordinate coordinate, T element) {
+        return set(coordinate.x, coordinate.y, element);
     }
 
     public T set(int x, int y, T element) {
@@ -142,6 +154,28 @@ public class ElasticMatrix<T> {
         content.clear();
     }
 
+    public void swap(Coordinate coordinate1, Coordinate coordinate2) {
+        swap(coordinate1.x, coordinate1.y, coordinate2.x, coordinate2.y);
+    }
+
+    public void swap(int x1, int y1, int x2, int y2) {
+        T temp = get(x1, y1);
+        set(x1, y1, get(x2, y2));
+        set(x2, y2, temp);
+    }
+
+    public void swapRows(int y1, int y2) {
+        for (int x = 0; x < content.size(); x++) {
+            swap(x, y1, x, y2);
+        }
+    }
+
+    public void swapColumns(int x1, int x2) {
+        for (int y = 0; y < rows(); y++) {
+            swap(x1, y, x2, y);
+        }
+    }
+
     public List<List<T>> getRows() {
         List<List<T>> rows = new ArrayList<>();
         for (int y = 0; y < rows(); y++) {
@@ -204,6 +238,10 @@ public class ElasticMatrix<T> {
         public Coordinate(int x, int y) {
             this.x = x;
             this.y = y;
+        }
+
+        public static Coordinate of(int x, int y) {
+            return new Coordinate(x, y);
         }
 
         public int getX() {

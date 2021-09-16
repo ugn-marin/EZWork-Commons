@@ -57,6 +57,7 @@ public class ElasticMatrixTest {
     @Test
     void empty() {
         var matrix = new ElasticMatrix<Integer>();
+        Assertions.assertTrue(matrix.isEmpty());
         Assertions.assertTrue(matrix.size().equals(0, 0));
         assertData("", matrix);
         Assertions.assertTrue(matrix.getRows().isEmpty());
@@ -67,6 +68,7 @@ public class ElasticMatrixTest {
     void firstAddEmptyRow() {
         var matrix = new ElasticMatrix<Integer>();
         matrix.addRow();
+        Assertions.assertFalse(matrix.isEmpty());
         Assertions.assertTrue(matrix.size().equals(1, 1));
         assertData("null", matrix);
     }
@@ -84,6 +86,7 @@ public class ElasticMatrixTest {
     void firstAddEmptyColumn() {
         var matrix = new ElasticMatrix<Integer>();
         matrix.addColumn();
+        Assertions.assertFalse(matrix.isEmpty());
         Assertions.assertTrue(matrix.size().equals(1, 1));
         assertData("null", matrix);
     }
@@ -708,7 +711,7 @@ public class ElasticMatrixTest {
     }
 
     @Test
-    void set() {
+    void updates() {
         var matrix = new ElasticMatrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
@@ -720,6 +723,12 @@ public class ElasticMatrixTest {
         Assertions.assertTrue(matrix.lastIndexOf('a').equals(1, 1));
         Assertions.assertNull(matrix.indexOf('d'));
         Assertions.assertNull(matrix.lastIndexOf('d'));
+        matrix.swap(matrix.indexOf('b'), matrix.indexOf('c'));
+        assertData("a,c|b,a", matrix);
+        matrix.swapRows(0, 1);
+        assertData("b,a|a,c", matrix);
+        matrix.swapColumns(0, 1);
+        assertData("a,b|c,a", matrix);
     }
 
     @Test
