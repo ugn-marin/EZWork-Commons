@@ -8,7 +8,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
- * A lazy supplier decorator.
+ * A lazy supplier, calculating the value if and only if it hasn't already.
  * @param <T> The value type.
  */
 public class Lazy<T> implements Supplier<T> {
