@@ -28,8 +28,28 @@ public class ElasticMatrix<T> {
         return getRows().get(y);
     }
 
+    public List<T> getFirstRow() {
+        return getRow(0);
+    }
+
+    public List<T> getLastRow() {
+        return getRow(rows() - 1);
+    }
+
     public List<T> getColumn(int x) {
         return getColumns().get(x);
+    }
+
+    public List<T> getFirstColumn() {
+        return getColumn(0);
+    }
+
+    public List<T> getLastColumn() {
+        return getColumn(content.size() - 1);
+    }
+
+    public boolean contains(T element) {
+        return indexOf(element) != null;
     }
 
     public Coordinate indexOf(T element) {

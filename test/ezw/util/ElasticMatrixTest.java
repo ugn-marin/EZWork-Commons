@@ -165,6 +165,7 @@ public class ElasticMatrixTest {
         matrix.addRow('a');
         Assertions.assertTrue(matrix.size().equals(1, 1));
         assertData("a", matrix);
+        Assertions.assertTrue(matrix.contains('a'));
     }
 
     @Test
@@ -191,6 +192,7 @@ public class ElasticMatrixTest {
         matrix.addColumn('a');
         Assertions.assertTrue(matrix.size().equals(1, 1));
         assertData("a", matrix);
+        Assertions.assertTrue(matrix.contains('a'));
     }
 
     @Test
@@ -219,7 +221,9 @@ public class ElasticMatrixTest {
         Assertions.assertTrue(matrix.size().equals(2, 2));
         assertData("a,b|c,d", matrix);
         assertData(matrix.getRow(0), 'a', 'b');
+        assertData(matrix.getFirstRow(), 'a', 'b');
         assertData(matrix.getRow(1), 'c', 'd');
+        assertData(matrix.getLastRow(), 'c', 'd');
         var rows = matrix.getRows();
         assertData(rows.get(0), 'a', 'b');
         assertData(rows.get(1), 'c', 'd');
@@ -233,7 +237,9 @@ public class ElasticMatrixTest {
         Assertions.assertTrue(matrix.size().equals(2, 2));
         assertData("a,b|c,d", matrix);
         assertData(matrix.getColumn(0), 'a', 'c');
+        assertData(matrix.getFirstColumn(), 'a', 'c');
         assertData(matrix.getColumn(1), 'b', 'd');
+        assertData(matrix.getLastColumn(), 'b', 'd');
         var columns = matrix.getColumns();
         assertData(columns.get(0), 'a', 'c');
         assertData(columns.get(1), 'b', 'd');
@@ -746,8 +752,8 @@ public class ElasticMatrixTest {
     void badIndexes() {
         var matrix = new ElasticMatrix<Character>();
         assertBadIndex(() -> matrix.get(0, 0));
-        assertBadIndex(() -> matrix.getRow(0));
-        assertBadIndex(() -> matrix.getColumn(0));
+        assertBadIndex(matrix::getFirstRow);
+        assertBadIndex(matrix::getFirstColumn);
         assertBadIndex(() -> matrix.addRowAfter(0));
         assertBadIndex(() -> matrix.addColumnAfter(0));
         assertBadIndex(() -> matrix.addRowAfter(0, 'X'));
