@@ -24,9 +24,26 @@ public class ElasticMatrix<T> {
         return content.get(x).set(y, element);
     }
 
+    public List<T> getRow(int y) {
+        return getRows().get(y);
+    }
+
+    public List<T> getColumn(int x) {
+        return getColumns().get(x);
+    }
+
     public Coordinate indexOf(T element) {
         for (int x = 0; x < content.size(); x++) {
             int y = content.get(x).indexOf(element);
+            if (y >= 0)
+                return new Coordinate(x, y);
+        }
+        return null;
+    }
+
+    public Coordinate lastIndexOf(T element) {
+        for (int x = content.size() - 1; x >= 0; x--) {
+            int y = content.get(x).lastIndexOf(element);
             if (y >= 0)
                 return new Coordinate(x, y);
         }
@@ -40,6 +57,8 @@ public class ElasticMatrix<T> {
 
     @SafeVarargs
     public final void addRowBefore(int y, T... row) {
+        if (y > rows())
+            throw new IndexOutOfBoundsException("Row " + y + " can't be added having a total of " + rows());
         boolean wasEmpty = content.isEmpty();
         if (wasEmpty)
             content.add(fill(1));
@@ -63,6 +82,8 @@ public class ElasticMatrix<T> {
 
     @SafeVarargs
     public final void addColumnBefore(int x, T... column) {
+        if (x > content.size())
+            throw new IndexOutOfBoundsException("Column " + x + " can't be added having a total of " + content.size());
         boolean wasEmpty = content.isEmpty();
         Sugar.repeat(Math.max(column.length - rows(), 0), this::addRow);
         var columnContent = fill(Math.max(rows(), 1));
@@ -86,10 +107,14 @@ public class ElasticMatrix<T> {
     }
 
     public List<T> removeRow(int y) {
+        if (y >= rows())
+            throw new IndexOutOfBoundsException("Row " + y + " doesn't exist");
         return content.stream().map(column -> column.remove(y)).collect(Collectors.toList());
     }
 
     public List<T> removeColumn(int x) {
+        if (x >= content.size())
+            throw new IndexOutOfBoundsException("Column " + x + " doesn't exist");
         return content.remove(x);
     }
 
@@ -99,11 +124,11 @@ public class ElasticMatrix<T> {
             int fy = y;
             rows.add(content.stream().map(column -> column.get(fy)).collect(Collectors.toList()));
         }
-        return List.copyOf(rows);
+        return rows;
     }
 
     public List<List<T>> getColumns() {
-        return List.copyOf(content.stream().map(ArrayList::new).collect(Collectors.toList()));
+        return content.stream().map(ArrayList::new).collect(Collectors.toList());
     }
 
     @Override
