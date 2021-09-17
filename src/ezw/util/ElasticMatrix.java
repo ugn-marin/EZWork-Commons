@@ -327,8 +327,10 @@ public class ElasticMatrix<T> {
      * @param columns True if packing columns is required.
      */
     public void pack(boolean rows, boolean columns) {
-        if (rows) pack(this::getLastRow, this::removeLastRow);
-        if (columns) pack(this::getLastColumn, this::removeLastColumn);
+        if (rows)
+            pack(this::getLastRow, this::removeLastRow);
+        if (columns)
+            pack(this::getLastColumn, this::removeLastColumn);
     }
 
     private void pack(Supplier<List<T>> getLast, Runnable removeLast) {
