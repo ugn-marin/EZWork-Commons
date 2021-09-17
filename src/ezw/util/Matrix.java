@@ -44,11 +44,11 @@ public class Matrix<T> {
 
     /**
      * Constructs a matrix containing the data from the provided two-dimensional array.
-     * @param matrix The matrix data.
+     * @param data The matrix data.
      * @throws IndexOutOfBoundsException If rows length is zero.
      */
-    public Matrix(T[][] matrix) {
-        for (var row : matrix) {
+    public Matrix(T[][] data) {
+        for (var row : data) {
             if (row.length == 0)
                 throw new IndexOutOfBoundsException("The matrix size can't be zero in one dimension.");
             addRow(row);
@@ -64,7 +64,7 @@ public class Matrix<T> {
 
     /**
      * Returns the matrix size, where X means columns and Y means rows. Null cells, including whole rows/columns of
-     * nulls, are included. A zero coordinate always means the other coordinate is also zero.
+     * nulls, are included. A zero coordinate always means the other coordinate is also zero (matrix is empty).
      */
     public Coordinates size() {
         return new Coordinates(content.size(), rows());
