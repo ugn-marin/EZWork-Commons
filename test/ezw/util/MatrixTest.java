@@ -4,7 +4,7 @@ import org.junit.jupiter.api.*;
 
 import java.util.List;
 
-public class ElasticMatrixTest {
+public class MatrixTest {
 
     @BeforeEach
     void beforeEach(TestInfo testInfo) {
@@ -16,7 +16,7 @@ public class ElasticMatrixTest {
         System.out.println();
     }
 
-    private void assertData(String expected, ElasticMatrix<?> matrix) {
+    private void assertData(String expected, Matrix<?> matrix) {
         System.out.println(matrix);
         Assertions.assertEquals(expected, matrix.toString(",", "|", "null", false));
         var columns = matrix.getColumns();
@@ -27,7 +27,7 @@ public class ElasticMatrixTest {
     }
 
     @SafeVarargs
-    private <T> void assertData(ElasticMatrix<T> matrix, T... expected) {
+    private <T> void assertData(Matrix<T> matrix, T... expected) {
         var size = matrix.size();
         int i = 0;
         for (int y = 0; y < size.getY(); y++) {
@@ -56,7 +56,7 @@ public class ElasticMatrixTest {
 
     @Test
     void empty() {
-        var matrix = new ElasticMatrix<Integer>();
+        var matrix = new Matrix<Integer>();
         Assertions.assertTrue(matrix.isEmpty());
         Assertions.assertTrue(matrix.size().equals(0, 0));
         assertData("", matrix);
@@ -66,7 +66,7 @@ public class ElasticMatrixTest {
 
     @Test
     void firstAddEmptyRow() {
-        var matrix = new ElasticMatrix<Integer>();
+        var matrix = new Matrix<Integer>();
         matrix.addRow();
         Assertions.assertFalse(matrix.isEmpty());
         Assertions.assertTrue(matrix.size().equals(1, 1));
@@ -75,7 +75,7 @@ public class ElasticMatrixTest {
 
     @Test
     void stretchByEmptyRow() {
-        var matrix = new ElasticMatrix<Integer>();
+        var matrix = new Matrix<Integer>();
         matrix.addRow();
         matrix.addRow();
         Assertions.assertTrue(matrix.size().equals(1, 2));
@@ -84,7 +84,7 @@ public class ElasticMatrixTest {
 
     @Test
     void firstAddEmptyColumn() {
-        var matrix = new ElasticMatrix<Integer>();
+        var matrix = new Matrix<Integer>();
         matrix.addColumn();
         Assertions.assertFalse(matrix.isEmpty());
         Assertions.assertTrue(matrix.size().equals(1, 1));
@@ -93,7 +93,7 @@ public class ElasticMatrixTest {
 
     @Test
     void stretchByEmptyColumn() {
-        var matrix = new ElasticMatrix<Integer>();
+        var matrix = new Matrix<Integer>();
         matrix.addColumn();
         matrix.addColumn();
         Assertions.assertTrue(matrix.size().equals(2, 1));
@@ -102,7 +102,7 @@ public class ElasticMatrixTest {
 
     @Test
     void build2x2EmptyRows() {
-        var matrix = new ElasticMatrix<Integer>();
+        var matrix = new Matrix<Integer>();
         matrix.addRow();
         matrix.addRow();
         matrix.addColumn();
@@ -112,7 +112,7 @@ public class ElasticMatrixTest {
 
     @Test
     void stretch2x2EmptyRows() {
-        var matrix = new ElasticMatrix<Integer>();
+        var matrix = new Matrix<Integer>();
         matrix.addRow();
         matrix.addRowBefore(0);
         matrix.addColumn();
@@ -122,7 +122,7 @@ public class ElasticMatrixTest {
 
     @Test
     void build2x2EmptyColumns() {
-        var matrix = new ElasticMatrix<Integer>();
+        var matrix = new Matrix<Integer>();
         matrix.addColumn();
         matrix.addColumn();
         matrix.addRow();
@@ -132,7 +132,7 @@ public class ElasticMatrixTest {
 
     @Test
     void stretch2x2EmptyColumns() {
-        var matrix = new ElasticMatrix<Integer>();
+        var matrix = new Matrix<Integer>();
         matrix.addColumn();
         matrix.addColumnBefore(0);
         matrix.addRow();
@@ -142,7 +142,7 @@ public class ElasticMatrixTest {
 
     @Test
     void buildAndFill2x2() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow();
         matrix.addRow();
         matrix.addColumn();
@@ -156,7 +156,7 @@ public class ElasticMatrixTest {
 
     @Test
     void buildRow1() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a');
         Assertions.assertTrue(matrix.size().equals(1, 1));
         assertData("a", matrix);
@@ -165,7 +165,7 @@ public class ElasticMatrixTest {
 
     @Test
     void buildRow2() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         Assertions.assertTrue(matrix.size().equals(2, 1));
         assertData("a,b", matrix);
@@ -173,7 +173,7 @@ public class ElasticMatrixTest {
 
     @Test
     void build2x2Rows() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -183,7 +183,7 @@ public class ElasticMatrixTest {
 
     @Test
     void buildColumn1() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addColumn('a');
         Assertions.assertTrue(matrix.size().equals(1, 1));
         assertData("a", matrix);
@@ -192,7 +192,7 @@ public class ElasticMatrixTest {
 
     @Test
     void buildColumn2() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addColumn('a', 'c');
         Assertions.assertTrue(matrix.size().equals(1, 2));
         assertData("a|c", matrix);
@@ -200,7 +200,7 @@ public class ElasticMatrixTest {
 
     @Test
     void build2x2Columns() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addColumn('a', 'c');
         matrix.addColumn('b', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -210,7 +210,7 @@ public class ElasticMatrixTest {
 
     @Test
     void indexOf() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -227,7 +227,7 @@ public class ElasticMatrixTest {
 
     @Test
     void getRows() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -243,7 +243,7 @@ public class ElasticMatrixTest {
 
     @Test
     void getColumns() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -259,7 +259,7 @@ public class ElasticMatrixTest {
 
     @Test
     void insertInto2x2EmptyRow_0() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -271,7 +271,7 @@ public class ElasticMatrixTest {
 
     @Test
     void insertInto2x2EmptyRow0_() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -283,7 +283,7 @@ public class ElasticMatrixTest {
 
     @Test
     void insertInto2x2EmptyRow_1() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -295,7 +295,7 @@ public class ElasticMatrixTest {
 
     @Test
     void insertInto2x2EmptyRow1_() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -307,7 +307,7 @@ public class ElasticMatrixTest {
 
     @Test
     void insertInto2x2Row_0() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -319,7 +319,7 @@ public class ElasticMatrixTest {
 
     @Test
     void insertInto2x2Row0_() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -331,7 +331,7 @@ public class ElasticMatrixTest {
 
     @Test
     void insertInto2x2Row_1() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -343,7 +343,7 @@ public class ElasticMatrixTest {
 
     @Test
     void insertInto2x2Row1_() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -355,7 +355,7 @@ public class ElasticMatrixTest {
 
     @Test
     void insertInto2x2PartialRow_0() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -367,7 +367,7 @@ public class ElasticMatrixTest {
 
     @Test
     void insertInto2x2PartialRow0_() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -379,7 +379,7 @@ public class ElasticMatrixTest {
 
     @Test
     void insertInto2x2PartialRow_1() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -391,7 +391,7 @@ public class ElasticMatrixTest {
 
     @Test
     void insertInto2x2PartialRow1_() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -403,7 +403,7 @@ public class ElasticMatrixTest {
 
     @Test
     void insertInto2x2StretchRow_0() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -415,7 +415,7 @@ public class ElasticMatrixTest {
 
     @Test
     void insertInto2x2StretchRow0_() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -427,7 +427,7 @@ public class ElasticMatrixTest {
 
     @Test
     void insertInto2x2StretchRow_1() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -439,7 +439,7 @@ public class ElasticMatrixTest {
 
     @Test
     void insertInto2x2StretchRow1_() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -451,7 +451,7 @@ public class ElasticMatrixTest {
 
     @Test
     void insertInto2x2EmptyColumn_0() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -463,7 +463,7 @@ public class ElasticMatrixTest {
 
     @Test
     void insertInto2x2EmptyColumn0_() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -475,7 +475,7 @@ public class ElasticMatrixTest {
 
     @Test
     void insertInto2x2EmptyColumn_1() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -487,7 +487,7 @@ public class ElasticMatrixTest {
 
     @Test
     void insertInto2x2EmptyColumn1_() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -499,7 +499,7 @@ public class ElasticMatrixTest {
 
     @Test
     void insertInto2x2Column_0() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -511,7 +511,7 @@ public class ElasticMatrixTest {
 
     @Test
     void insertInto2x2Column0_() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -523,7 +523,7 @@ public class ElasticMatrixTest {
 
     @Test
     void insertInto2x2Column_1() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -535,7 +535,7 @@ public class ElasticMatrixTest {
 
     @Test
     void insertInto2x2Column1_() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -547,7 +547,7 @@ public class ElasticMatrixTest {
 
     @Test
     void insertInto2x2PartialColumn_0() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -559,7 +559,7 @@ public class ElasticMatrixTest {
 
     @Test
     void insertInto2x2PartialColumn0_() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -571,7 +571,7 @@ public class ElasticMatrixTest {
 
     @Test
     void insertInto2x2PartialColumn_1() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -583,7 +583,7 @@ public class ElasticMatrixTest {
 
     @Test
     void insertInto2x2PartialColumn1_() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -595,7 +595,7 @@ public class ElasticMatrixTest {
 
     @Test
     void insertInto2x2StretchColumn_0() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -607,7 +607,7 @@ public class ElasticMatrixTest {
 
     @Test
     void insertInto2x2StretchColumn0_() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -619,7 +619,7 @@ public class ElasticMatrixTest {
 
     @Test
     void insertInto2x2StretchColumn_1() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -631,7 +631,7 @@ public class ElasticMatrixTest {
 
     @Test
     void insertInto2x2StretchColumn1_() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -643,7 +643,7 @@ public class ElasticMatrixTest {
 
     @Test
     void removeFrom3x3Row0() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b', 'c');
         matrix.addRow('d', 'e', 'f');
         matrix.addRow('g', 'h', 'i');
@@ -656,7 +656,7 @@ public class ElasticMatrixTest {
 
     @Test
     void removeFrom3x3Row1() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b', 'c');
         matrix.addRow('d', 'e', 'f');
         matrix.addRow('g', 'h', 'i');
@@ -669,7 +669,7 @@ public class ElasticMatrixTest {
 
     @Test
     void removeFrom3x3Row2() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b', 'c');
         matrix.addRow('d', 'e', 'f');
         matrix.addRow('g', 'h', 'i');
@@ -682,7 +682,7 @@ public class ElasticMatrixTest {
 
     @Test
     void removeFrom3x3Column0() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b', 'c');
         matrix.addRow('d', 'e', 'f');
         matrix.addRow('g', 'h', 'i');
@@ -695,7 +695,7 @@ public class ElasticMatrixTest {
 
     @Test
     void removeFrom3x3Column1() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b', 'c');
         matrix.addRow('d', 'e', 'f');
         matrix.addRow('g', 'h', 'i');
@@ -708,7 +708,7 @@ public class ElasticMatrixTest {
 
     @Test
     void removeFrom3x3Column2() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b', 'c');
         matrix.addRow('d', 'e', 'f');
         matrix.addRow('g', 'h', 'i');
@@ -721,7 +721,7 @@ public class ElasticMatrixTest {
 
     @Test
     void updates() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
@@ -742,7 +742,7 @@ public class ElasticMatrixTest {
 
     @Test
     void packRows() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         matrix.addRow();
@@ -758,7 +758,7 @@ public class ElasticMatrixTest {
 
     @Test
     void packColumns() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         matrix.addRow();
@@ -774,7 +774,7 @@ public class ElasticMatrixTest {
 
     @Test
     void packBoth() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         matrix.addRow();
@@ -790,7 +790,7 @@ public class ElasticMatrixTest {
 
     @Test
     void packEmpty() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow();
         matrix.addRow();
         matrix.addColumn();
@@ -802,10 +802,10 @@ public class ElasticMatrixTest {
 
     @Test
     void equals() {
-        var matrix1 = new ElasticMatrix<Character>();
+        var matrix1 = new Matrix<Character>();
         matrix1.addRow('a', 'b');
         matrix1.addRow('c', 'd');
-        var matrix2 = new ElasticMatrix<Character>();
+        var matrix2 = new Matrix<Character>();
         matrix2.addRow('a', 'b');
         matrix2.addRow('c', 'd');
         Assertions.assertEquals(matrix1, matrix2);
@@ -815,7 +815,7 @@ public class ElasticMatrixTest {
 
     @Test
     void unmodifiable() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         matrix.getRow(0).add('X');
@@ -828,7 +828,7 @@ public class ElasticMatrixTest {
 
     @Test
     void badIndexes() {
-        var matrix = new ElasticMatrix<Character>();
+        var matrix = new Matrix<Character>();
         assertBadIndex(() -> matrix.get(0, 0));
         assertBadIndex(matrix::getFirstRow);
         assertBadIndex(matrix::getFirstColumn);

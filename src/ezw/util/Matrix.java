@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
  * A matrix of flexible size, supporting spreadsheet-like manipulation of cells, rows and columns.
  * @param <T> The type of elements in the matrix.
  */
-public class ElasticMatrix<T> {
+public class Matrix<T> {
     private final List<List<T>> content = new ArrayList<>();
 
     /**
@@ -141,6 +141,25 @@ public class ElasticMatrix<T> {
                 return new Coordinates(x, y);
         }
         return null;
+    }
+
+    /**
+     * Returns the matrix cells as an ordered list of rows. Modifying the result will have no effect on the matrix.
+     */
+    public List<List<T>> getRows() {
+        List<List<T>> rows = new ArrayList<>();
+        for (int y = 0; y < rows(); y++) {
+            int fy = y;
+            rows.add(content.stream().map(column -> column.get(fy)).collect(Collectors.toList()));
+        }
+        return rows;
+    }
+
+    /**
+     * Returns the matrix cells as an ordered list of columns. Modifying the result will have no effect on the matrix.
+     */
+    public List<List<T>> getColumns() {
+        return content.stream().map(ArrayList::new).collect(Collectors.toList());
     }
 
     /**
@@ -390,32 +409,13 @@ public class ElasticMatrix<T> {
         }
     }
 
-    /**
-     * Returns the matrix cells as an ordered list of rows. Modifying the result will have no effect on the matrix.
-     */
-    public List<List<T>> getRows() {
-        List<List<T>> rows = new ArrayList<>();
-        for (int y = 0; y < rows(); y++) {
-            int fy = y;
-            rows.add(content.stream().map(column -> column.get(fy)).collect(Collectors.toList()));
-        }
-        return rows;
-    }
-
-    /**
-     * Returns the matrix cells as an ordered list of columns. Modifying the result will have no effect on the matrix.
-     */
-    public List<List<T>> getColumns() {
-        return content.stream().map(ArrayList::new).collect(Collectors.toList());
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o)
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        ElasticMatrix<?> that = (ElasticMatrix<?>) o;
+        Matrix<?> that = (Matrix<?>) o;
         return size().equals(that.size()) && content.equals(that.content);
     }
 
