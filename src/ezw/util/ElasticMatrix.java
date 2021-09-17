@@ -3,6 +3,7 @@ package ezw.util;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -73,6 +74,7 @@ public class ElasticMatrix<T> {
 
     /**
      * Returns the first row. Modifying the result will have no effect on the matrix.
+     * @throws IndexOutOfBoundsException If the matrix is empty.
      */
     public List<T> getFirstRow() {
         return getRow(0);
@@ -80,6 +82,7 @@ public class ElasticMatrix<T> {
 
     /**
      * Returns the last row. Modifying the result will have no effect on the matrix.
+     * @throws IndexOutOfBoundsException If the matrix is empty.
      */
     public List<T> getLastRow() {
         return getRow(rows() - 1);
@@ -95,6 +98,7 @@ public class ElasticMatrix<T> {
 
     /**
      * Returns the first column. Modifying the result will have no effect on the matrix.
+     * @throws IndexOutOfBoundsException If the matrix is empty.
      */
     public List<T> getFirstColumn() {
         return getColumn(0);
@@ -102,6 +106,7 @@ public class ElasticMatrix<T> {
 
     /**
      * Returns the last column. Modifying the result will have no effect on the matrix.
+     * @throws IndexOutOfBoundsException If the matrix is empty.
      */
     public List<T> getLastColumn() {
         return getColumn(content.size() - 1);
@@ -262,7 +267,10 @@ public class ElasticMatrix<T> {
     public List<T> removeRow(int y) {
         if (y >= rows())
             throw new IndexOutOfBoundsException("Row " + y + " doesn't exist in a total of " + rows());
-        return content.stream().map(column -> column.remove(y)).collect(Collectors.toList());
+        var row = content.stream().map(column -> column.remove(y)).collect(Collectors.toList());
+        if (rows() == 0)
+            clear();
+        return row;
     }
 
     /**
@@ -319,19 +327,19 @@ public class ElasticMatrix<T> {
      * @param columns True if packing columns is required.
      */
     public void pack(boolean rows, boolean columns) {
-        if (rows) {
-            var lastRow = getLastRow();
-            while (lastRow.stream().allMatch(Objects::isNull)) {
-                removeLastRow();
-                lastRow = getLastRow();
-            }
-        }
-        if (columns) {
-            var lastColumn = getLastColumn();
-            while (lastColumn.stream().allMatch(Objects::isNull)) {
-                removeLastColumn();
-                lastColumn = getLastColumn();
-            }
+        if (rows) pack(this::getLastRow, this::removeLastRow);
+        if (columns) pack(this::getLastColumn, this::removeLastColumn);
+    }
+
+    private void pack(Supplier<List<T>> getLast, Runnable removeLast) {
+        if (isEmpty())
+            return;
+        var last = getLast.get();
+        while (last.stream().allMatch(Objects::isNull)) {
+            removeLast.run();
+            if (isEmpty())
+                return;
+            last = getLast.get();
         }
     }
 

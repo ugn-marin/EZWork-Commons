@@ -773,7 +773,7 @@ public class ElasticMatrixTest {
     }
 
     @Test
-    void pack() {
+    void packBoth() {
         var matrix = new ElasticMatrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
@@ -786,6 +786,18 @@ public class ElasticMatrixTest {
         matrix.pack(true, true);
         Assertions.assertTrue(matrix.size().equals(2, 2));
         assertData("a,b|c,d", matrix);
+    }
+
+    @Test
+    void packEmpty() {
+        var matrix = new ElasticMatrix<Character>();
+        matrix.addRow();
+        matrix.addRow();
+        matrix.addColumn();
+        Assertions.assertTrue(matrix.size().equals(2, 2));
+        assertData("null,null|null,null", matrix);
+        matrix.pack(true, true);
+        Assertions.assertTrue(matrix.isEmpty());
     }
 
     @Test
