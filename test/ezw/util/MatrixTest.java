@@ -849,22 +849,12 @@ public class MatrixTest {
     @Test
     void badIndexes() {
         var matrix = new Matrix<Character>();
-        assertBadIndex(() -> matrix.get(0, 0));
-        assertBadIndex(matrix::getFirstRow);
-        assertBadIndex(matrix::getFirstColumn);
-        assertBadIndex(() -> matrix.addRowAfter(0));
-        assertBadIndex(() -> matrix.addColumnAfter(0));
-        assertBadIndex(() -> matrix.addRowAfter(0, 'X'));
-        assertBadIndex(() -> matrix.addColumnAfter(0, 'X'));
-        assertBadIndex(() -> matrix.addRowBefore(1));
-        assertBadIndex(() -> matrix.addColumnBefore(1));
-        assertBadIndex(() -> matrix.addRowBefore(1, 'X'));
-        assertBadIndex(() -> matrix.addColumnBefore(1, 'X'));
-        assertBadIndex(matrix::removeFirstRow);
-        assertBadIndex(matrix::removeFirstColumn);
+        assertBadIndexesNegative(matrix);
+        assertBadIndexesEmpty(matrix);
         matrix.addRow('a', 'b');
         Assertions.assertTrue(matrix.size().equals(2, 1));
         assertData("a,b", matrix);
+        assertBadIndexesNegative(matrix);
         assertBadIndex(() -> matrix.get(2, 0));
         assertBadIndex(() -> matrix.get(0, 1));
         assertBadIndex(() -> matrix.getRow(1));
@@ -882,6 +872,7 @@ public class MatrixTest {
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
         assertData("a,b|c,d", matrix);
+        assertBadIndexesNegative(matrix);
         assertBadIndex(() -> matrix.get(2, 2));
         assertBadIndex(() -> matrix.getRow(2));
         assertBadIndex(() -> matrix.addRowAfter(2));
@@ -892,6 +883,7 @@ public class MatrixTest {
         matrix.removeRow(1);
         Assertions.assertTrue(matrix.size().equals(2, 1));
         assertData("a,b", matrix);
+        assertBadIndexesNegative(matrix);
         assertBadIndex(() -> matrix.get(2, 0));
         assertBadIndex(() -> matrix.get(0, 1));
         assertBadIndex(() -> matrix.getRow(1));
@@ -909,6 +901,7 @@ public class MatrixTest {
         matrix.removeColumn(1);
         Assertions.assertTrue(matrix.size().equals(1, 1));
         assertData("a", matrix);
+        assertBadIndexesNegative(matrix);
         assertBadIndex(() -> matrix.get(1, 0));
         assertBadIndex(() -> matrix.get(0, 1));
         assertBadIndex(() -> matrix.getRow(1));
@@ -926,6 +919,11 @@ public class MatrixTest {
         matrix.clear();
         Assertions.assertTrue(matrix.size().equals(0, 0));
         assertData("", matrix);
+        assertBadIndexesNegative(matrix);
+        assertBadIndexesEmpty(matrix);
+    }
+
+    private void assertBadIndexesEmpty(Matrix<Character> matrix) {
         assertBadIndex(() -> matrix.get(0, 0));
         assertBadIndex(matrix::getFirstRow);
         assertBadIndex(matrix::getFirstColumn);
@@ -939,5 +937,22 @@ public class MatrixTest {
         assertBadIndex(() -> matrix.addColumnBefore(1, 'X'));
         assertBadIndex(matrix::removeFirstRow);
         assertBadIndex(matrix::removeFirstColumn);
+    }
+
+    private void assertBadIndexesNegative(Matrix<Character> matrix) {
+        assertBadIndex(() -> matrix.get(-1, 0));
+        assertBadIndex(() -> matrix.get(0, -1));
+        assertBadIndex(() -> matrix.getRow(-1));
+        assertBadIndex(() -> matrix.getColumn(-1));
+        assertBadIndex(() -> matrix.addRowAfter(-1));
+        assertBadIndex(() -> matrix.addColumnAfter(-1));
+        assertBadIndex(() -> matrix.addRowAfter(-1, 'X'));
+        assertBadIndex(() -> matrix.addColumnAfter(-1, 'X'));
+        assertBadIndex(() -> matrix.addRowBefore(-1));
+        assertBadIndex(() -> matrix.addColumnBefore(-1));
+        assertBadIndex(() -> matrix.addRowBefore(-1, 'X'));
+        assertBadIndex(() -> matrix.addColumnBefore(-1, 'X'));
+        assertBadIndex(() -> matrix.removeRow(-1));
+        assertBadIndex(() -> matrix.removeColumn(-1));
     }
 }

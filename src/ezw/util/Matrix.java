@@ -33,6 +33,11 @@ public class Matrix<T> {
         return content.isEmpty() ? 0 : Sugar.first(content).size();
     }
 
+    private void validateNegative(int index) {
+        if (index < 0)
+            throw new IndexOutOfBoundsException("Index out of bounds: " + index);
+    }
+
     /**
      * Returns the cell at the coordinates provided.
      * @throws IndexOutOfBoundsException If a coordinate is out of bounds.
@@ -70,7 +75,9 @@ public class Matrix<T> {
      * @throws IndexOutOfBoundsException If the index is out of bounds.
      */
     public List<T> getRow(int y) {
-        return getRows().get(y);
+        if (isEmpty())
+            throw new IndexOutOfBoundsException("Matrix is empty, can't get row " + y);
+        return content.stream().map(column -> column.get(y)).collect(Collectors.toList());
     }
 
     /**
@@ -94,7 +101,7 @@ public class Matrix<T> {
      * @throws IndexOutOfBoundsException If the index is out of bounds.
      */
     public List<T> getColumn(int x) {
-        return getColumns().get(x);
+        return new ArrayList<>(content.get(x));
     }
 
     /**
@@ -189,6 +196,7 @@ public class Matrix<T> {
      */
     @SafeVarargs
     public final void addRowBefore(int y, T... row) {
+        validateNegative(y);
         if (y > rows())
             throw new IndexOutOfBoundsException("Row " + y + " can't be added having a total of " + rows());
         boolean wasEmpty = content.isEmpty();
@@ -214,6 +222,7 @@ public class Matrix<T> {
      */
     @SafeVarargs
     public final void addRowAfter(int y, T... row) {
+        validateNegative(y);
         addRowBefore(y + 1, row);
     }
 
@@ -244,6 +253,7 @@ public class Matrix<T> {
      */
     @SafeVarargs
     public final void addColumnBefore(int x, T... column) {
+        validateNegative(x);
         if (x > content.size())
             throw new IndexOutOfBoundsException("Column " + x + " can't be added having a total of " + content.size());
         boolean wasEmpty = content.isEmpty();
@@ -269,6 +279,7 @@ public class Matrix<T> {
      */
     @SafeVarargs
     public final void addColumnAfter(int x, T... column) {
+        validateNegative(x);
         addColumnBefore(x + 1, column);
     }
 
@@ -285,6 +296,7 @@ public class Matrix<T> {
      * @throws IndexOutOfBoundsException If the index is out of bounds.
      */
     public List<T> removeRow(int y) {
+        validateNegative(y);
         if (y >= rows())
             throw new IndexOutOfBoundsException("Row " + y + " doesn't exist in a total of " + rows());
         var row = content.stream().map(column -> column.remove(y)).collect(Collectors.toList());
@@ -318,6 +330,7 @@ public class Matrix<T> {
      * @throws IndexOutOfBoundsException If the index is out of bounds.
      */
     public List<T> removeColumn(int x) {
+        validateNegative(x);
         if (x >= content.size())
             throw new IndexOutOfBoundsException("Column " + x + " doesn't exist in a total of " + content.size());
         return content.remove(x);
