@@ -801,6 +801,26 @@ public class MatrixTest {
     }
 
     @Test
+    void reverseX() {
+        var matrix = new Matrix<Character>();
+        matrix.addRow('a', 'b');
+        matrix.addRow('c', 'd');
+        matrix.reverseX();
+        Assertions.assertTrue(matrix.size().equals(2, 2));
+        assertData("b,a|d,c", matrix);
+    }
+
+    @Test
+    void reverseY() {
+        var matrix = new Matrix<Character>();
+        matrix.addRow('a', 'b');
+        matrix.addRow('c', 'd');
+        matrix.reverseY();
+        Assertions.assertTrue(matrix.size().equals(2, 2));
+        assertData("c,d|a,b", matrix);
+    }
+
+    @Test
     void equals() {
         var matrix1 = new Matrix<Character>();
         matrix1.addRow('a', 'b');

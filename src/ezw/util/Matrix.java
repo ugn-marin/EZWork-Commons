@@ -1,6 +1,7 @@
 package ezw.util;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -407,6 +408,20 @@ public class Matrix<T> {
         for (int y = 0; y < rows(); y++) {
             swap(x1, y, x2, y);
         }
+    }
+
+    /**
+     * Reverses the order of the columns.
+     */
+    public void reverseX() {
+        Collections.reverse(content);
+    }
+
+    /**
+     * Reverses the order of the rows.
+     */
+    public void reverseY() {
+        content.forEach(Collections::reverse);
     }
 
     @Override
