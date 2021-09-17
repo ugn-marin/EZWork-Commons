@@ -260,6 +260,20 @@ public abstract class Sugar {
     }
 
     /**
+     * Removes and returns the first member of the list. Throws appropriate exceptions if the list is null or empty.
+     */
+    public static <T> T removeFirst(List<T> objects) {
+        return requireNonEmpty(objects).remove(0);
+    }
+
+    /**
+     * Removes and returns the last member of the list. Throws appropriate exceptions if the list is null or empty.
+     */
+    public static <T> T removeLast(List<T> objects) {
+        return requireNonEmpty(objects).remove(objects.size() - 1);
+    }
+
+    /**
      * Returns a set of all members of the collection that are instances of a certain type.
      * @param objects An objects collection.
      * @param type A class.
