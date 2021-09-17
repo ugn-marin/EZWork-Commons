@@ -215,7 +215,7 @@ public class MatrixTest {
     }
 
     @Test
-    void initMatrix() {
+    void initData() {
         var matrix = new Matrix<>(new Character[][] {
                 {'a', 'b'},
                 {'c', 'd'}
@@ -239,6 +239,19 @@ public class MatrixTest {
         Assertions.assertTrue(matrix.lastIndexOf('b').equals(1, 0));
         Assertions.assertTrue(matrix.lastIndexOf('c').equals(0, 1));
         Assertions.assertTrue(matrix.lastIndexOf('d').equals(1, 1));
+    }
+
+    @Test
+    void indexOfOrder() {
+        var matrix = new Matrix<Character>();
+        matrix.addRow('a', 'b');
+        matrix.addRow('b', 'a');
+        Assertions.assertTrue(matrix.size().equals(2, 2));
+        assertData("a,b|b,a", matrix);
+        Assertions.assertTrue(matrix.indexOf('a').equals(0, 0));
+        Assertions.assertTrue(matrix.indexOf('b').equals(0, 1));
+        Assertions.assertTrue(matrix.lastIndexOf('a').equals(1, 1));
+        Assertions.assertTrue(matrix.lastIndexOf('b').equals(1, 0));
     }
 
     @Test
