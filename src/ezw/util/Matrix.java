@@ -410,10 +410,8 @@ public class Matrix<T> {
      * Updates the row at the specified index.
      * @param y The row index.
      * @param row Optional values of the new row. If empty or smaller than the number of columns in the matrix, the
-     *            missing values are padded with nulls, unless it is the only row in the matrix. If greater than the
-     *            number of columns in the matrix, it is stretched to accommodate the new value(s) by adding columns,
-     *            padded with nulls where necessary. If the row is empty and the matrix contains exactly one row, it is
-     *            set to size [1, 1], containing null.
+     *            missing values are padded with nulls. If greater than the number of columns in the matrix, it is
+     *            stretched to accommodate the new value(s) by adding columns, padded with nulls where necessary.
      * @return The replaced row.
      * @throws IndexOutOfBoundsException If the index is out of bounds.
      */
@@ -421,6 +419,7 @@ public class Matrix<T> {
     public final List<T> setRow(int y, T... row) {
         var previous = removeRow(y);
         addRowBefore(y, row);
+        Sugar.repeat(Math.max(previous.size() - content.size(), 0), this::addColumn);
         return previous;
     }
 
@@ -428,10 +427,8 @@ public class Matrix<T> {
      * Updates the column at the specified index.
      * @param x The column index.
      * @param column Optional values of the new column. If empty or smaller than the number of rows in the matrix, the
-     *               missing values are padded with nulls, unless it is the only column in the matrix. If greater than
-     *               the number of rows in the matrix, it is stretched to accommodate the new value(s) by adding rows,
-     *               padded with nulls where necessary. If the row is empty and the matrix contains exactly one column,
-     *               it is set to size [1, 1], containing null.
+     *               missing values are padded with nulls. If greater than the number of rows in the matrix, it is
+     *               stretched to accommodate the new value(s) by adding rows, padded with nulls where necessary.
      * @return The replaced column.
      * @throws IndexOutOfBoundsException If the index is out of bounds.
      */
@@ -439,6 +436,7 @@ public class Matrix<T> {
     public final List<T> setColumn(int x, T... column) {
         var previous = removeColumn(x);
         addColumnBefore(x, column);
+        Sugar.repeat(Math.max(previous.size() - rows(), 0), this::addRow);
         return previous;
     }
 

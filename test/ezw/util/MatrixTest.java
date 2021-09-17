@@ -1059,14 +1059,14 @@ public class MatrixTest {
         Assertions.assertTrue(matrix.size().equals(2, 1));
         assertData("a,b", matrix);
         assertData(matrix.setRow(0, 'a'), 'a', 'b');
-        Assertions.assertTrue(matrix.size().equals(1, 1));
-        assertData("a", matrix);
-        assertData(matrix.setRow(0, 'a', 'b'), 'a');
+        Assertions.assertTrue(matrix.size().equals(2, 1));
+        assertData("a,null", matrix);
+        assertData(matrix.setRow(0, 'a', 'b'), 'a', null);
         Assertions.assertTrue(matrix.size().equals(2, 1));
         assertData("a,b", matrix);
         assertData(matrix.setRow(0), 'a', 'b');
-        Assertions.assertTrue(matrix.size().equals(1, 1));
-        assertData("null", matrix);
+        Assertions.assertTrue(matrix.size().equals(2, 1));
+        assertData("null,null", matrix);
     }
 
     @Test
@@ -1081,14 +1081,14 @@ public class MatrixTest {
         Assertions.assertTrue(matrix.size().equals(1, 2));
         assertData("a|b", matrix);
         assertData(matrix.setColumn(0, 'a'), 'a', 'b');
-        Assertions.assertTrue(matrix.size().equals(1, 1));
-        assertData("a", matrix);
-        assertData(matrix.setColumn(0, 'a', 'b'), 'a');
+        Assertions.assertTrue(matrix.size().equals(1, 2));
+        assertData("a|null", matrix);
+        assertData(matrix.setColumn(0, 'a', 'b'), 'a', null);
         Assertions.assertTrue(matrix.size().equals(1, 2));
         assertData("a|b", matrix);
         assertData(matrix.setColumn(0), 'a', 'b');
-        Assertions.assertTrue(matrix.size().equals(1, 1));
-        assertData("null", matrix);
+        Assertions.assertTrue(matrix.size().equals(1, 2));
+        assertData("null|null", matrix);
     }
 
     @Test
