@@ -1,11 +1,9 @@
 package ezw.util;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A matrix of flexible size, supporting spreadsheet-like manipulation of cells, rows and columns.
@@ -15,6 +13,49 @@ public class Matrix<T> {
     private final List<List<T>> content = new ArrayList<>();
 
     /**
+     * Constructs an empty matrix.
+     */
+    public Matrix() {
+        this(0, 0);
+    }
+
+    /**
+     * Constructs a matrix of the specified size.
+     * @param size The matrix size, where X means columns and Y means rows.
+     * @throws IndexOutOfBoundsException If a coordinate is negative, or only one of the coordinates is zero.
+     */
+    public Matrix(Coordinates size) {
+        this(size.x, size.y);
+    }
+
+    /**
+     * Constructs a matrix of the specified size.
+     * @param x The columns number.
+     * @param y The rows number.
+     * @throws IndexOutOfBoundsException If a coordinate is negative, or only one of the coordinates is zero.
+     */
+    public Matrix(int x, int y) {
+        validateNegative(x);
+        validateNegative(y);
+        if (x * y == 0 && x != y)
+            throw new IndexOutOfBoundsException("The matrix size can't be zero in one dimension.");
+        Sugar.repeat(x, () -> content.add(fill(y)));
+    }
+
+    /**
+     * Constructs a matrix containing the data from the provided two-dimensional array.
+     * @param matrix The matrix data.
+     * @throws IndexOutOfBoundsException If rows length is zero.
+     */
+    public Matrix(T[][] matrix) {
+        for (var row : matrix) {
+            if (row.length == 0)
+                throw new IndexOutOfBoundsException("The matrix size can't be zero in one dimension.");
+            addRow(row);
+        }
+    }
+
+    /**
      * Returns true if the matrix size is [0, 0].
      */
     public boolean isEmpty() {
@@ -22,8 +63,8 @@ public class Matrix<T> {
     }
 
     /**
-     * Returns the matrix size. Null cells, including whole rows/columns of nulls, are included. A zero coordinate
-     * always means the other coordinate is also zero.
+     * Returns the matrix size, where X means columns and Y means rows. Null cells, including whole rows/columns of
+     * nulls, are included. A zero coordinate always means the other coordinate is also zero.
      */
     public Coordinates size() {
         return new Coordinates(content.size(), rows());
@@ -56,6 +97,7 @@ public class Matrix<T> {
 
     /**
      * Updates the cell at the coordinates provided.
+     * @return The replaced element.
      * @throws IndexOutOfBoundsException If a coordinate is out of bounds.
      */
     public T set(Coordinates coordinates, T element) {
@@ -64,6 +106,7 @@ public class Matrix<T> {
 
     /**
      * Updates the cell at the coordinates provided.
+     * @return The replaced element.
      * @throws IndexOutOfBoundsException If a coordinate is out of bounds.
      */
     public T set(int x, int y, T element) {
@@ -128,7 +171,8 @@ public class Matrix<T> {
     }
 
     /**
-     * Returns the coordinates of the first occurrence of the element (smallest x and y), or null if not found.
+     * Returns the coordinates of the first occurrence of the element (smallest x and y), or null if not found. The
+     * search is done by columns (column 0 from row 0 to Y, column 1 from row 0 etc.).
      */
     public Coordinates indexOf(T element) {
         for (int x = 0; x < content.size(); x++) {
@@ -140,7 +184,8 @@ public class Matrix<T> {
     }
 
     /**
-     * Returns the coordinates of the last occurrence of the element (greatest x and y), or null if not found.
+     * Returns the coordinates of the last occurrence of the element (greatest x and y), or null if not found. The
+     * search is done by columns (column X from row Y to 0, column X-1 from row Y etc.).
      */
     public Coordinates lastIndexOf(T element) {
         for (int x = content.size() - 1; x >= 0; x--) {
@@ -168,6 +213,13 @@ public class Matrix<T> {
      */
     public List<List<T>> getColumns() {
         return content.stream().map(ArrayList::new).collect(Collectors.toList());
+    }
+
+    /**
+     * Returns a flat stream of the matrix elements. The order is column 0 from row 0 to Y, column 1 from row 0 etc.
+     */
+    public Stream<T> stream() {
+        return content.stream().flatMap(Collection::stream);
     }
 
     /**
@@ -352,6 +404,42 @@ public class Matrix<T> {
      */
     public List<T> removeLastColumn() {
         return removeColumn(content.size() - 1);
+    }
+
+    /**
+     * Updates the row at the specified index.
+     * @param y The row index.
+     * @param row Optional values of the new row. If empty or smaller than the number of columns in the matrix, the
+     *            missing values are padded with nulls, unless it is the only row in the matrix. If greater than the
+     *            number of columns in the matrix, it is stretched to accommodate the new value(s) by adding columns,
+     *            padded with nulls where necessary. If the row is empty and the matrix contains exactly one row, it is
+     *            set to size [1, 1], containing null.
+     * @return The replaced row.
+     * @throws IndexOutOfBoundsException If the index is out of bounds.
+     */
+    @SafeVarargs
+    public final List<T> setRow(int y, T... row) {
+        var previous = removeRow(y);
+        addRowBefore(y, row);
+        return previous;
+    }
+
+    /**
+     * Updates the column at the specified index.
+     * @param x The column index.
+     * @param column Optional values of the new column. If empty or smaller than the number of rows in the matrix, the
+     *               missing values are padded with nulls, unless it is the only column in the matrix. If greater than
+     *               the number of rows in the matrix, it is stretched to accommodate the new value(s) by adding rows,
+     *               padded with nulls where necessary. If the row is empty and the matrix contains exactly one column,
+     *               it is set to size [1, 1], containing null.
+     * @return The replaced column.
+     * @throws IndexOutOfBoundsException If the index is out of bounds.
+     */
+    @SafeVarargs
+    public final List<T> setColumn(int x, T... column) {
+        var previous = removeColumn(x);
+        addColumnBefore(x, column);
+        return previous;
     }
 
     /**

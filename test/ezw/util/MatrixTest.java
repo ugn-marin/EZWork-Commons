@@ -3,6 +3,7 @@ package ezw.util;
 import org.junit.jupiter.api.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MatrixTest {
 
@@ -62,6 +63,14 @@ public class MatrixTest {
         assertData("", matrix);
         Assertions.assertTrue(matrix.getRows().isEmpty());
         Assertions.assertTrue(matrix.getColumns().isEmpty());
+    }
+
+    @Test
+    void initSize() {
+        var matrix = new Matrix<Integer>(3, 2);
+        Assertions.assertFalse(matrix.isEmpty());
+        Assertions.assertTrue(matrix.size().equals(3, 2));
+        assertData("null,null,null|null,null,null", matrix);
     }
 
     @Test
@@ -142,10 +151,7 @@ public class MatrixTest {
 
     @Test
     void buildAndFill2x2() {
-        var matrix = new Matrix<Character>();
-        matrix.addRow();
-        matrix.addRow();
-        matrix.addColumn();
+        var matrix = new Matrix<Character>(Matrix.Coordinates.of(2, 2));
         matrix.set(0, 0, 'a');
         matrix.set(1, 0, 'b');
         matrix.set(0, 1, 'c');
@@ -206,6 +212,16 @@ public class MatrixTest {
         Assertions.assertTrue(matrix.size().equals(2, 2));
         assertData("a,b|c,d", matrix);
         assertData(matrix, 'a', 'b', 'c', 'd');
+    }
+
+    @Test
+    void initMatrix() {
+        var matrix = new Matrix<>(new Character[][] {
+                {'a', 'b'},
+                {'c', 'd'}
+        });
+        Assertions.assertTrue(matrix.size().equals(2, 2));
+        assertData("a,b|c,d", matrix);
     }
 
     @Test
@@ -720,6 +736,371 @@ public class MatrixTest {
     }
 
     @Test
+    void update3x3Row0() {
+        var matrix = new Matrix<Character>();
+        matrix.addRow('a', 'b', 'c');
+        matrix.addRow('d', 'e', 'f');
+        matrix.addRow('g', 'h', 'i');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("a,b,c|d,e,f|g,h,i", matrix);
+        assertData(matrix.setRow(0, 'x', 'y', 'z'), 'a', 'b', 'c');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("x,y,z|d,e,f|g,h,i", matrix);
+    }
+
+    @Test
+    void update3x3Row1() {
+        var matrix = new Matrix<Character>();
+        matrix.addRow('a', 'b', 'c');
+        matrix.addRow('d', 'e', 'f');
+        matrix.addRow('g', 'h', 'i');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("a,b,c|d,e,f|g,h,i", matrix);
+        assertData(matrix.setRow(1, 'x', 'y', 'z'), 'd', 'e', 'f');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("a,b,c|x,y,z|g,h,i", matrix);
+    }
+
+    @Test
+    void update3x3Row2() {
+        var matrix = new Matrix<Character>();
+        matrix.addRow('a', 'b', 'c');
+        matrix.addRow('d', 'e', 'f');
+        matrix.addRow('g', 'h', 'i');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("a,b,c|d,e,f|g,h,i", matrix);
+        assertData(matrix.setRow(2, 'x', 'y', 'z'), 'g', 'h', 'i');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("a,b,c|d,e,f|x,y,z", matrix);
+    }
+
+    @Test
+    void update3x3Row0Empty() {
+        var matrix = new Matrix<Character>();
+        matrix.addRow('a', 'b', 'c');
+        matrix.addRow('d', 'e', 'f');
+        matrix.addRow('g', 'h', 'i');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("a,b,c|d,e,f|g,h,i", matrix);
+        assertData(matrix.setRow(0), 'a', 'b', 'c');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("null,null,null|d,e,f|g,h,i", matrix);
+    }
+
+    @Test
+    void update3x3Row1Empty() {
+        var matrix = new Matrix<Character>();
+        matrix.addRow('a', 'b', 'c');
+        matrix.addRow('d', 'e', 'f');
+        matrix.addRow('g', 'h', 'i');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("a,b,c|d,e,f|g,h,i", matrix);
+        assertData(matrix.setRow(1), 'd', 'e', 'f');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("a,b,c|null,null,null|g,h,i", matrix);
+    }
+
+    @Test
+    void update3x3Row2Empty() {
+        var matrix = new Matrix<Character>();
+        matrix.addRow('a', 'b', 'c');
+        matrix.addRow('d', 'e', 'f');
+        matrix.addRow('g', 'h', 'i');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("a,b,c|d,e,f|g,h,i", matrix);
+        assertData(matrix.setRow(2), 'g', 'h', 'i');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("a,b,c|d,e,f|null,null,null", matrix);
+    }
+
+    @Test
+    void update3x3Row0Partial() {
+        var matrix = new Matrix<Character>();
+        matrix.addRow('a', 'b', 'c');
+        matrix.addRow('d', 'e', 'f');
+        matrix.addRow('g', 'h', 'i');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("a,b,c|d,e,f|g,h,i", matrix);
+        assertData(matrix.setRow(0, 'x'), 'a', 'b', 'c');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("x,null,null|d,e,f|g,h,i", matrix);
+    }
+
+    @Test
+    void update3x3Row1Partial() {
+        var matrix = new Matrix<Character>();
+        matrix.addRow('a', 'b', 'c');
+        matrix.addRow('d', 'e', 'f');
+        matrix.addRow('g', 'h', 'i');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("a,b,c|d,e,f|g,h,i", matrix);
+        assertData(matrix.setRow(1, 'x'), 'd', 'e', 'f');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("a,b,c|x,null,null|g,h,i", matrix);
+    }
+
+    @Test
+    void update3x3Row2Partial() {
+        var matrix = new Matrix<Character>();
+        matrix.addRow('a', 'b', 'c');
+        matrix.addRow('d', 'e', 'f');
+        matrix.addRow('g', 'h', 'i');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("a,b,c|d,e,f|g,h,i", matrix);
+        assertData(matrix.setRow(2, 'x'), 'g', 'h', 'i');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("a,b,c|d,e,f|x,null,null", matrix);
+    }
+
+    @Test
+    void update3x3Row0Stretch() {
+        var matrix = new Matrix<Character>();
+        matrix.addRow('a', 'b', 'c');
+        matrix.addRow('d', 'e', 'f');
+        matrix.addRow('g', 'h', 'i');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("a,b,c|d,e,f|g,h,i", matrix);
+        assertData(matrix.setRow(0, 'x', 'y', 'z', '1'), 'a', 'b', 'c');
+        Assertions.assertTrue(matrix.size().equals(4, 3));
+        assertData("x,y,z,1|d,e,f,null|g,h,i,null", matrix);
+    }
+
+    @Test
+    void update3x3Row1Stretch() {
+        var matrix = new Matrix<Character>();
+        matrix.addRow('a', 'b', 'c');
+        matrix.addRow('d', 'e', 'f');
+        matrix.addRow('g', 'h', 'i');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("a,b,c|d,e,f|g,h,i", matrix);
+        assertData(matrix.setRow(1, 'x', 'y', 'z', '1'), 'd', 'e', 'f');
+        Assertions.assertTrue(matrix.size().equals(4, 3));
+        assertData("a,b,c,null|x,y,z,1|g,h,i,null", matrix);
+    }
+
+    @Test
+    void update3x3Row2Stretch() {
+        var matrix = new Matrix<Character>();
+        matrix.addRow('a', 'b', 'c');
+        matrix.addRow('d', 'e', 'f');
+        matrix.addRow('g', 'h', 'i');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("a,b,c|d,e,f|g,h,i", matrix);
+        assertData(matrix.setRow(2, 'x', 'y', 'z', '1'), 'g', 'h', 'i');
+        Assertions.assertTrue(matrix.size().equals(4, 3));
+        assertData("a,b,c,null|d,e,f,null|x,y,z,1", matrix);
+    }
+
+    @Test
+    void update3x3Column0() {
+        var matrix = new Matrix<Character>();
+        matrix.addRow('a', 'b', 'c');
+        matrix.addRow('d', 'e', 'f');
+        matrix.addRow('g', 'h', 'i');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("a,b,c|d,e,f|g,h,i", matrix);
+        assertData(matrix.setColumn(0, 'x', 'y', 'z'), 'a', 'd', 'g');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("x,b,c|y,e,f|z,h,i", matrix);
+    }
+
+    @Test
+    void update3x3Column1() {
+        var matrix = new Matrix<Character>();
+        matrix.addRow('a', 'b', 'c');
+        matrix.addRow('d', 'e', 'f');
+        matrix.addRow('g', 'h', 'i');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("a,b,c|d,e,f|g,h,i", matrix);
+        assertData(matrix.setColumn(1, 'x', 'y', 'z'), 'b', 'e', 'h');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("a,x,c|d,y,f|g,z,i", matrix);
+    }
+
+    @Test
+    void update3x3Column2() {
+        var matrix = new Matrix<Character>();
+        matrix.addRow('a', 'b', 'c');
+        matrix.addRow('d', 'e', 'f');
+        matrix.addRow('g', 'h', 'i');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("a,b,c|d,e,f|g,h,i", matrix);
+        assertData(matrix.setColumn(2, 'x', 'y', 'z'), 'c', 'f', 'i');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("a,b,x|d,e,y|g,h,z", matrix);
+    }
+
+    @Test
+    void update3x3Column0Empty() {
+        var matrix = new Matrix<Character>();
+        matrix.addRow('a', 'b', 'c');
+        matrix.addRow('d', 'e', 'f');
+        matrix.addRow('g', 'h', 'i');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("a,b,c|d,e,f|g,h,i", matrix);
+        assertData(matrix.setColumn(0), 'a', 'd', 'g');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("null,b,c|null,e,f|null,h,i", matrix);
+    }
+
+    @Test
+    void update3x3Column1Empty() {
+        var matrix = new Matrix<Character>();
+        matrix.addRow('a', 'b', 'c');
+        matrix.addRow('d', 'e', 'f');
+        matrix.addRow('g', 'h', 'i');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("a,b,c|d,e,f|g,h,i", matrix);
+        assertData(matrix.setColumn(1), 'b', 'e', 'h');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("a,null,c|d,null,f|g,null,i", matrix);
+    }
+
+    @Test
+    void update3x3Column2Empty() {
+        var matrix = new Matrix<Character>();
+        matrix.addRow('a', 'b', 'c');
+        matrix.addRow('d', 'e', 'f');
+        matrix.addRow('g', 'h', 'i');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("a,b,c|d,e,f|g,h,i", matrix);
+        assertData(matrix.setColumn(2), 'c', 'f', 'i');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("a,b,null|d,e,null|g,h,null", matrix);
+    }
+
+    @Test
+    void update3x3Column0Partial() {
+        var matrix = new Matrix<Character>();
+        matrix.addRow('a', 'b', 'c');
+        matrix.addRow('d', 'e', 'f');
+        matrix.addRow('g', 'h', 'i');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("a,b,c|d,e,f|g,h,i", matrix);
+        assertData(matrix.setColumn(0, 'x'), 'a', 'd', 'g');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("x,b,c|null,e,f|null,h,i", matrix);
+    }
+
+    @Test
+    void update3x3Column1Partial() {
+        var matrix = new Matrix<Character>();
+        matrix.addRow('a', 'b', 'c');
+        matrix.addRow('d', 'e', 'f');
+        matrix.addRow('g', 'h', 'i');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("a,b,c|d,e,f|g,h,i", matrix);
+        assertData(matrix.setColumn(1, 'x'), 'b', 'e', 'h');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("a,x,c|d,null,f|g,null,i", matrix);
+    }
+
+    @Test
+    void update3x3Column2Partial() {
+        var matrix = new Matrix<Character>();
+        matrix.addRow('a', 'b', 'c');
+        matrix.addRow('d', 'e', 'f');
+        matrix.addRow('g', 'h', 'i');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("a,b,c|d,e,f|g,h,i", matrix);
+        assertData(matrix.setColumn(2, 'x'), 'c', 'f', 'i');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("a,b,x|d,e,null|g,h,null", matrix);
+    }
+
+    @Test
+    void update3x3Column0Stretch() {
+        var matrix = new Matrix<Character>();
+        matrix.addRow('a', 'b', 'c');
+        matrix.addRow('d', 'e', 'f');
+        matrix.addRow('g', 'h', 'i');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("a,b,c|d,e,f|g,h,i", matrix);
+        assertData(matrix.setColumn(0, 'x', 'y', 'z', '1'), 'a', 'd', 'g');
+        Assertions.assertTrue(matrix.size().equals(3, 4));
+        assertData("x,b,c|y,e,f|z,h,i|1,null,null", matrix);
+    }
+
+    @Test
+    void update3x3Column1Stretch() {
+        var matrix = new Matrix<Character>();
+        matrix.addRow('a', 'b', 'c');
+        matrix.addRow('d', 'e', 'f');
+        matrix.addRow('g', 'h', 'i');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("a,b,c|d,e,f|g,h,i", matrix);
+        assertData(matrix.setColumn(1, 'x', 'y', 'z', '1'), 'b', 'e', 'h');
+        Assertions.assertTrue(matrix.size().equals(3, 4));
+        assertData("a,x,c|d,y,f|g,z,i|null,1,null", matrix);
+    }
+
+    @Test
+    void update3x3Column2Stretch() {
+        var matrix = new Matrix<Character>();
+        matrix.addRow('a', 'b', 'c');
+        matrix.addRow('d', 'e', 'f');
+        matrix.addRow('g', 'h', 'i');
+        Assertions.assertTrue(matrix.size().equals(3, 3));
+        assertData("a,b,c|d,e,f|g,h,i", matrix);
+        assertData(matrix.setColumn(2, 'x', 'y', 'z', '1'), 'c', 'f', 'i');
+        Assertions.assertTrue(matrix.size().equals(3, 4));
+        assertData("a,b,x|d,e,y|g,h,z|null,null,1", matrix);
+    }
+
+    @Test
+    void update1x1Row() {
+        var matrix = new Matrix<Character>(1, 1);
+        assertData(matrix.setRow(0, 'a'), (Character) null);
+        Assertions.assertTrue(matrix.size().equals(1, 1));
+        assertData("a", matrix);
+        assertData(matrix.setRow(0), 'a');
+        assertData("null", matrix);
+        assertData(matrix.setRow(0, 'a', 'b'), (Character) null);
+        Assertions.assertTrue(matrix.size().equals(2, 1));
+        assertData("a,b", matrix);
+        assertData(matrix.setRow(0, 'a'), 'a', 'b');
+        Assertions.assertTrue(matrix.size().equals(1, 1));
+        assertData("a", matrix);
+        assertData(matrix.setRow(0, 'a', 'b'), 'a');
+        Assertions.assertTrue(matrix.size().equals(2, 1));
+        assertData("a,b", matrix);
+        assertData(matrix.setRow(0), 'a', 'b');
+        Assertions.assertTrue(matrix.size().equals(1, 1));
+        assertData("null", matrix);
+    }
+
+    @Test
+    void update1x1Column() {
+        var matrix = new Matrix<Character>(1, 1);
+        assertData(matrix.setColumn(0, 'a'), (Character) null);
+        Assertions.assertTrue(matrix.size().equals(1, 1));
+        assertData("a", matrix);
+        assertData(matrix.setColumn(0), 'a');
+        assertData("null", matrix);
+        assertData(matrix.setColumn(0, 'a', 'b'), (Character) null);
+        Assertions.assertTrue(matrix.size().equals(1, 2));
+        assertData("a|b", matrix);
+        assertData(matrix.setColumn(0, 'a'), 'a', 'b');
+        Assertions.assertTrue(matrix.size().equals(1, 1));
+        assertData("a", matrix);
+        assertData(matrix.setColumn(0, 'a', 'b'), 'a');
+        Assertions.assertTrue(matrix.size().equals(1, 2));
+        assertData("a|b", matrix);
+        assertData(matrix.setColumn(0), 'a', 'b');
+        Assertions.assertTrue(matrix.size().equals(1, 1));
+        assertData("null", matrix);
+    }
+
+    @Test
+    void stream() {
+        var matrix = new Matrix<String>();
+        matrix.addRow("a", "b", "c");
+        matrix.addRow("d", "e", "f");
+        matrix.addRow("g", "h", "i");
+        Assertions.assertEquals("a-d-g-b-e-h-c-f-i", matrix.stream().collect(Collectors.joining("-")));
+    }
+
+    @Test
     void updates() {
         var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
@@ -848,6 +1229,10 @@ public class MatrixTest {
 
     @Test
     void badIndexes() {
+        assertBadIndex(() -> new Matrix<>(0, 1));
+        assertBadIndex(() -> new Matrix<>(1, 0));
+        assertBadIndex(() -> new Matrix<>(-1, -1));
+        assertBadIndex(() -> new Matrix<>(new Object[][] {{}}));
         var matrix = new Matrix<Character>();
         assertBadIndexesNegative(matrix);
         assertBadIndexesEmpty(matrix);
@@ -869,6 +1254,10 @@ public class MatrixTest {
         assertBadIndex(() -> matrix.addColumnBefore(3, 'X'));
         assertBadIndex(() -> matrix.removeRow(1));
         assertBadIndex(() -> matrix.removeColumn(2));
+        assertBadIndex(() -> matrix.setRow(1));
+        assertBadIndex(() -> matrix.setRow(1, 'X'));
+        assertBadIndex(() -> matrix.setColumn(2));
+        assertBadIndex(() -> matrix.setColumn(2, 'X'));
         matrix.addRow('c', 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
         assertData("a,b|c,d", matrix);
@@ -880,6 +1269,10 @@ public class MatrixTest {
         assertBadIndex(() -> matrix.addRowBefore(3));
         assertBadIndex(() -> matrix.addRowBefore(3, 'X'));
         assertBadIndex(() -> matrix.removeRow(2));
+        assertBadIndex(() -> matrix.setRow(2));
+        assertBadIndex(() -> matrix.setRow(2, 'X'));
+        assertBadIndex(() -> matrix.setColumn(2));
+        assertBadIndex(() -> matrix.setColumn(2, 'X'));
         matrix.removeRow(1);
         Assertions.assertTrue(matrix.size().equals(2, 1));
         assertData("a,b", matrix);
@@ -898,6 +1291,10 @@ public class MatrixTest {
         assertBadIndex(() -> matrix.addColumnBefore(3, 'X', 'Y'));
         assertBadIndex(() -> matrix.removeRow(1));
         assertBadIndex(() -> matrix.removeColumn(2));
+        assertBadIndex(() -> matrix.setRow(1));
+        assertBadIndex(() -> matrix.setRow(1, 'X'));
+        assertBadIndex(() -> matrix.setColumn(2));
+        assertBadIndex(() -> matrix.setColumn(2, 'X'));
         matrix.removeColumn(1);
         Assertions.assertTrue(matrix.size().equals(1, 1));
         assertData("a", matrix);
@@ -916,6 +1313,10 @@ public class MatrixTest {
         assertBadIndex(() -> matrix.addColumnBefore(2, 'X', 'Y'));
         assertBadIndex(() -> matrix.removeRow(1));
         assertBadIndex(() -> matrix.removeColumn(1));
+        assertBadIndex(() -> matrix.setRow(1));
+        assertBadIndex(() -> matrix.setRow(1, 'X'));
+        assertBadIndex(() -> matrix.setColumn(1));
+        assertBadIndex(() -> matrix.setColumn(1, 'X'));
         matrix.clear();
         Assertions.assertTrue(matrix.size().equals(0, 0));
         assertData("", matrix);
@@ -937,6 +1338,10 @@ public class MatrixTest {
         assertBadIndex(() -> matrix.addColumnBefore(1, 'X'));
         assertBadIndex(matrix::removeFirstRow);
         assertBadIndex(matrix::removeFirstColumn);
+        assertBadIndex(() -> matrix.setRow(0));
+        assertBadIndex(() -> matrix.setRow(0, 'X'));
+        assertBadIndex(() -> matrix.setColumn(0));
+        assertBadIndex(() -> matrix.setColumn(0, 'X'));
     }
 
     private void assertBadIndexesNegative(Matrix<Character> matrix) {
@@ -954,5 +1359,9 @@ public class MatrixTest {
         assertBadIndex(() -> matrix.addColumnBefore(-1, 'X'));
         assertBadIndex(() -> matrix.removeRow(-1));
         assertBadIndex(() -> matrix.removeColumn(-1));
+        assertBadIndex(() -> matrix.setRow(-1));
+        assertBadIndex(() -> matrix.setRow(-1, 'X'));
+        assertBadIndex(() -> matrix.setColumn(-1));
+        assertBadIndex(() -> matrix.setColumn(-1, 'X'));
     }
 }
