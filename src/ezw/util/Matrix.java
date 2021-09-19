@@ -556,24 +556,17 @@ public class Matrix<T> {
         getBlock().forEach((x, y) -> {
             String string = Objects.toString(get(x, y), nullDefault);
             strings.set(x, y, string);
-            maxLength[x] = Math.max(maxLength[x], string.length());
+            if (tabFiller)
+                maxLength[x] = Math.max(maxLength[x], string.length());
         });
-        StringBuilder sb = new StringBuilder();
-        getRowsRange().forEach(y -> {
-            if (y > 0)
-                sb.append(rowsDelimiter);
-            StringBuilder row = new StringBuilder();
-            getColumnsRange().forEach(x -> {
-                if (x > 0)
-                    row.append(cellsDelimiter);
+        if (tabFiller) {
+            getBlock().forEach((x, y) -> {
                 String string = strings.get(x, y);
-                row.append(string);
-                if (tabFiller)
-                    row.append(" ".repeat(maxLength[x] - string.length()));
+                strings.set(x, y, string + " ".repeat(maxLength[x] - string.length()));
             });
-            sb.append(row.toString().stripTrailing());
-        });
-        return sb.toString().stripTrailing();
+        }
+        return strings.getRows().stream().map(row -> String.join(cellsDelimiter, row).stripTrailing())
+                .collect(Collectors.joining(rowsDelimiter)).stripTrailing();
     }
 
     /**
