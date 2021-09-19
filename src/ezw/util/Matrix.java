@@ -1,6 +1,7 @@
 package ezw.util;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -35,11 +36,9 @@ public class Matrix<T> {
      * @throws IndexOutOfBoundsException If a coordinate is negative, or only one of the coordinates is zero.
      */
     public Matrix(int x, int y) {
-        validateNegative(x);
-        validateNegative(y);
-        if (x * y == 0 && x != y)
+        if (validateNegative(x) * validateNegative(y) == 0 && x != y)
             throw new IndexOutOfBoundsException("The matrix size can't be zero in one dimension.");
-        Sugar.repeat(x, () -> content.add(fill(y)));
+        Sugar.repeat(x, () -> content.add(Sugar.fill(y)));
     }
 
     /**
@@ -74,9 +73,10 @@ public class Matrix<T> {
         return content.isEmpty() ? 0 : Sugar.first(content).size();
     }
 
-    private void validateNegative(int index) {
+    private static int validateNegative(int index) {
         if (index < 0)
             throw new IndexOutOfBoundsException("Index out of bounds: " + index);
+        return index;
     }
 
     /**
@@ -248,12 +248,11 @@ public class Matrix<T> {
      */
     @SafeVarargs
     public final void addRowBefore(int y, T... row) {
-        validateNegative(y);
-        if (y > rows())
+        if (validateNegative(y) > rows())
             throw new IndexOutOfBoundsException("Row " + y + " can't be added having a total of " + rows());
         boolean wasEmpty = content.isEmpty();
         if (wasEmpty)
-            content.add(fill(1));
+            content.add(Sugar.fill(1));
         Sugar.repeat(Math.max(row.length - content.size(), 0), this::addColumn);
         for (int x = 0; x < content.size(); x++) {
             content.get(x).add(y, x < row.length ? row[x] : null);
@@ -274,8 +273,7 @@ public class Matrix<T> {
      */
     @SafeVarargs
     public final void addRowAfter(int y, T... row) {
-        validateNegative(y);
-        addRowBefore(y + 1, row);
+        addRowBefore(validateNegative(y) + 1, row);
     }
 
     /**
@@ -305,12 +303,11 @@ public class Matrix<T> {
      */
     @SafeVarargs
     public final void addColumnBefore(int x, T... column) {
-        validateNegative(x);
-        if (x > content.size())
+        if (validateNegative(x) > content.size())
             throw new IndexOutOfBoundsException("Column " + x + " can't be added having a total of " + content.size());
         boolean wasEmpty = content.isEmpty();
         Sugar.repeat(Math.max(column.length - rows(), 0), this::addRow);
-        var columnContent = fill(Math.max(rows(), 1));
+        List<T> columnContent = Sugar.fill(Math.max(rows(), 1));
         for (int y = 0; y < rows() && y < column.length; y++) {
             columnContent.set(y, column[y]);
         }
@@ -331,14 +328,7 @@ public class Matrix<T> {
      */
     @SafeVarargs
     public final void addColumnAfter(int x, T... column) {
-        validateNegative(x);
-        addColumnBefore(x + 1, column);
-    }
-
-    private List<T> fill(int size) {
-        List<T> list = new ArrayList<>();
-        Sugar.repeat(size, () -> list.add(null));
-        return list;
+        addColumnBefore(validateNegative(x) + 1, column);
     }
 
     /**
@@ -348,8 +338,7 @@ public class Matrix<T> {
      * @throws IndexOutOfBoundsException If the index is out of bounds.
      */
     public List<T> removeRow(int y) {
-        validateNegative(y);
-        if (y >= rows())
+        if (validateNegative(y) >= rows())
             throw new IndexOutOfBoundsException("Row " + y + " doesn't exist in a total of " + rows());
         var row = content.stream().map(column -> column.remove(y)).collect(Collectors.toList());
         if (rows() == 0)
@@ -382,8 +371,7 @@ public class Matrix<T> {
      * @throws IndexOutOfBoundsException If the index is out of bounds.
      */
     public List<T> removeColumn(int x) {
-        validateNegative(x);
-        if (x >= content.size())
+        if (validateNegative(x) >= content.size())
             throw new IndexOutOfBoundsException("Column " + x + " doesn't exist in a total of " + content.size());
         return content.remove(x);
     }
@@ -543,7 +531,7 @@ public class Matrix<T> {
      * @param cellsDelimiter The delimiter between cells in a row. Default is space.
      * @param rowsDelimiter The delimiter between rows. Default is the line separator.
      * @param nullDefault The representation of null cells. Default is empty string.
-     * @param tabFiller True if tab-like spacing in cells is required. Generally speaking, should be true if the rows
+     * @param tabFiller True if tab-like spacing in cells is required. Generally speaking, should be true if the rows'
      *                  delimiter is newline. Default is true.
      * @return The string representation of the matrix.
      */
@@ -587,7 +575,7 @@ public class Matrix<T> {
         }
 
         public static Coordinates of(int x, int y) {
-            return new Coordinates(x, y);
+            return new Coordinates(validateNegative(x), validateNegative(y));
         }
 
         public int getX() {
@@ -618,7 +606,135 @@ public class Matrix<T> {
 
         @Override
         public String toString() {
-            return "[" + x + ", " + y + "]";
+            return "{" + x + ", " + y + "}";
+        }
+    }
+
+    /**
+     * One axis range.
+     */
+    public static class Range {
+        private final int from;
+        private final int to;
+
+        private Range(int from, int to) {
+            this.from = from;
+            this.to = to;
+        }
+
+        public static Range of(int from, int to) {
+            if (validateNegative(from) > validateNegative(to))
+                throw new IllegalArgumentException("Negative range.");
+            return new Range(from, to);
+        }
+
+        public int getFrom() {
+            return from;
+        }
+
+        public int getTo() {
+            return to;
+        }
+
+        public int size() {
+            return to - from;
+        }
+
+        public void forEach(Consumer<Integer> action) {
+            Objects.requireNonNull(action, "Action is null.");
+            for (int i = from; i <= to; i++) {
+                action.accept(i);
+            }
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
+            return ((Range) o).equals(from, to);
+        }
+
+        public boolean equals(int from, int to) {
+            return this.from == from && this.to == to;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(from, to);
+        }
+
+        @Override
+        public String toString() {
+            return "[" + from + ", " + to + "]";
+        }
+    }
+
+    /**
+     * Two axis range.
+     */
+    public static class Block {
+        private final Coordinates from;
+        private final Coordinates to;
+
+        private Block(Coordinates from, Coordinates to) {
+            this.from = from;
+            this.to = to;
+        }
+
+        public static Block of(int fromX, int fromY, int toX, int toY) {
+            return of(Coordinates.of(fromX, fromY), Coordinates.of(toX, toY));
+        }
+
+        public static Block of(Coordinates from, Coordinates to) {
+            if (from.x > to.x || from.y > to.y)
+                throw new IllegalArgumentException("Negative block.");
+            return new Block(from, to);
+        }
+
+        public Coordinates getFrom() {
+            return from;
+        }
+
+        public Coordinates getTo() {
+            return to;
+        }
+
+        public Coordinates size() {
+            return new Coordinates(to.x - from.x, to.y - from.y);
+        }
+
+        public void forEach(Consumer<Coordinates> action) {
+            Objects.requireNonNull(action, "Action is null.");
+            for (int x = from.x; x <= to.x; x++) {
+                for (int y = from.y; y <= to.y; y++) {
+                    action.accept(new Coordinates(x, y));
+                }
+            }
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
+            return ((Block) o).equals(from, to);
+        }
+
+        public boolean equals(Coordinates from, Coordinates to) {
+            return this.from.equals(from) && this.to.equals(to);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(from, to);
+        }
+
+        @Override
+        public String toString() {
+            return "[" + from + ", " + to + "]";
         }
     }
 }

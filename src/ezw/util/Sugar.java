@@ -274,6 +274,32 @@ public abstract class Sugar {
     }
 
     /**
+     * Fills a list with the supplier results.
+     * @param size The list size.
+     * @param supplier The supplier.
+     * @param <T> The list items type.
+     * @return The filled list.
+     */
+    public static <T> List<T> fill(int size, Supplier<T> supplier) {
+        Objects.requireNonNull(supplier, "Supplier is null.");
+        List<T> list = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            list.add(supplier.get());
+        }
+        return list;
+    }
+
+    /**
+     * Fills a list of nulls.
+     * @param size The list size.
+     * @param <T> The list items type.
+     * @return The filled list.
+     */
+    public static <T> List<T> fill(int size) {
+        return fill(size, () -> null);
+    }
+
+    /**
      * Returns a set of all members of the collection that are instances of a certain type.
      * @param objects An objects collection.
      * @param type A class.
