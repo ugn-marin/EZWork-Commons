@@ -26,7 +26,7 @@ public class Matrix<T> {
      * @throws IndexOutOfBoundsException If a coordinate is negative, or only one of the coordinates is zero.
      */
     public Matrix(Coordinates size) {
-        this(size.x, size.y);
+        this(size.getX(), size.getY());
     }
 
     /**
@@ -84,7 +84,7 @@ public class Matrix<T> {
      * @throws IndexOutOfBoundsException If a coordinate is out of bounds.
      */
     public T get(Coordinates coordinates) {
-        return get(coordinates.x, coordinates.y);
+        return get(coordinates.getX(), coordinates.getY());
     }
 
     /**
@@ -101,7 +101,7 @@ public class Matrix<T> {
      * @throws IndexOutOfBoundsException If a coordinate is out of bounds.
      */
     public T set(Coordinates coordinates, T element) {
-        return set(coordinates.x, coordinates.y, element);
+        return set(coordinates.getX(), coordinates.getY(), element);
     }
 
     /**
@@ -464,7 +464,7 @@ public class Matrix<T> {
      * @throws IndexOutOfBoundsException If a coordinate is out of bounds.
      */
     public void swap(Coordinates coordinates1, Coordinates coordinates2) {
-        swap(coordinates1.x, coordinates1.y, coordinates2.x, coordinates2.y);
+        swap(coordinates1.getX(), coordinates1.getY(), coordinates2.getX(), coordinates2.getY());
     }
 
     /**
@@ -565,13 +565,10 @@ public class Matrix<T> {
     /**
      * X and Y coordinates.
      */
-    public static class Coordinates {
-        private final int x;
-        private final int y;
+    public static class Coordinates extends Couple<Integer> {
 
         private Coordinates(int x, int y) {
-            this.x = x;
-            this.y = y;
+            super(Integer.class, x, y);
         }
 
         public static Coordinates of(int x, int y) {
@@ -579,108 +576,21 @@ public class Matrix<T> {
         }
 
         public int getX() {
-            return x;
+            return getFirst();
         }
 
         public int getY() {
-            return y;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o)
-                return true;
-            if (o == null || getClass() != o.getClass())
-                return false;
-            return ((Coordinates) o).equals(x, y);
-        }
-
-        public boolean equals(int x, int y) {
-            return this.x == x && this.y == y;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(x, y);
-        }
-
-        @Override
-        public String toString() {
-            return "{" + x + ", " + y + "}";
+            return getSecond();
         }
     }
 
     /**
-     * One axis range.
+     * A range of coordinates.
      */
-    public static class Range {
-        private final int from;
-        private final int to;
-
-        private Range(int from, int to) {
-            this.from = from;
-            this.to = to;
-        }
-
-        public static Range of(int from, int to) {
-            if (validateNegative(from) > validateNegative(to))
-                throw new IllegalArgumentException("Negative range.");
-            return new Range(from, to);
-        }
-
-        public int getFrom() {
-            return from;
-        }
-
-        public int getTo() {
-            return to;
-        }
-
-        public int size() {
-            return to - from;
-        }
-
-        public void forEach(Consumer<Integer> action) {
-            Objects.requireNonNull(action, "Action is null.");
-            for (int i = from; i <= to; i++) {
-                action.accept(i);
-            }
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o)
-                return true;
-            if (o == null || getClass() != o.getClass())
-                return false;
-            return ((Range) o).equals(from, to);
-        }
-
-        public boolean equals(int from, int to) {
-            return this.from == from && this.to == to;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(from, to);
-        }
-
-        @Override
-        public String toString() {
-            return "[" + from + ", " + to + "]";
-        }
-    }
-
-    /**
-     * Two axis range.
-     */
-    public static class Block {
-        private final Coordinates from;
-        private final Coordinates to;
+    public static class Block extends Couple<Coordinates> {
 
         private Block(Coordinates from, Coordinates to) {
-            this.from = from;
-            this.to = to;
+            super(Coordinates.class, from, to);
         }
 
         public static Block of(int fromX, int fromY, int toX, int toY) {
@@ -688,53 +598,34 @@ public class Matrix<T> {
         }
 
         public static Block of(Coordinates from, Coordinates to) {
-            if (from.x > to.x || from.y > to.y)
+            if (from.getX() > to.getX() || from.getY() > to.getY())
                 throw new IllegalArgumentException("Negative block.");
             return new Block(from, to);
         }
 
         public Coordinates getFrom() {
-            return from;
+            return getFirst();
         }
 
         public Coordinates getTo() {
-            return to;
+            return getSecond();
+        }
+
+        public Range getXRange() {
+            return Range.of(getFrom().getX(), getTo().getX());
+        }
+
+        public Range getYRange() {
+            return Range.of(getFrom().getY(), getTo().getY());
         }
 
         public Coordinates size() {
-            return new Coordinates(to.x - from.x, to.y - from.y);
+            return new Coordinates(getTo().getX() - getFrom().getX(), getTo().getY() - getFrom().getY());
         }
 
         public void forEach(Consumer<Coordinates> action) {
             Objects.requireNonNull(action, "Action is null.");
-            for (int x = from.x; x <= to.x; x++) {
-                for (int y = from.y; y <= to.y; y++) {
-                    action.accept(new Coordinates(x, y));
-                }
-            }
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o)
-                return true;
-            if (o == null || getClass() != o.getClass())
-                return false;
-            return ((Block) o).equals(from, to);
-        }
-
-        public boolean equals(Coordinates from, Coordinates to) {
-            return this.from.equals(from) && this.to.equals(to);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(from, to);
-        }
-
-        @Override
-        public String toString() {
-            return "[" + from + ", " + to + "]";
+            getXRange().forEach(x -> getYRange().forEach(y -> action.accept(Coordinates.of(x, y))));
         }
     }
 }
