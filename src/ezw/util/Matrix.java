@@ -1,6 +1,7 @@
 package ezw.util;
 
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -201,10 +202,8 @@ public class Matrix<T> {
      */
     public List<List<T>> getRows() {
         List<List<T>> rows = new ArrayList<>();
-        for (int y = 0; y < rows(); y++) {
-            int fy = y;
-            rows.add(content.stream().map(column -> column.get(fy)).collect(Collectors.toList()));
-        }
+        getRowsRange().forEach(y -> rows.add(content.stream().map(column -> column.get(y))
+                .collect(Collectors.toList())));
         return rows;
     }
 
@@ -213,6 +212,27 @@ public class Matrix<T> {
      */
     public List<List<T>> getColumns() {
         return content.stream().map(ArrayList::new).collect(Collectors.toList());
+    }
+
+    /**
+     * Returns a range of the matrix row indexes.
+     */
+    public Range getRowsRange() {
+        return Range.of(0, rows());
+    }
+
+    /**
+     * Returns a range of the matrix column indexes.
+     */
+    public Range getColumnsRange() {
+        return Range.of(0, content.size());
+    }
+
+    /**
+     * Returns a block of the matrix.
+     */
+    public Block getBlock() {
+        return new Block(new Coordinates(0, 0), size());
     }
 
     /**
@@ -254,9 +274,7 @@ public class Matrix<T> {
         if (wasEmpty)
             content.add(Sugar.fill(1));
         Sugar.repeat(Math.max(row.length - content.size(), 0), this::addColumn);
-        for (int x = 0; x < content.size(); x++) {
-            content.get(x).add(y, x < row.length ? row[x] : null);
-        }
+        getColumnsRange().forEach(x -> content.get(x).add(y, x < row.length ? row[x] : null));
         if (wasEmpty)
             removeRow(y + 1);
     }
@@ -482,9 +500,7 @@ public class Matrix<T> {
      * @throws IndexOutOfBoundsException If an index is out of bounds.
      */
     public void swapRows(int y1, int y2) {
-        for (int x = 0; x < content.size(); x++) {
-            swap(x, y1, x, y2);
-        }
+        getColumnsRange().forEach(x -> swap(x, y1, x, y2));
     }
 
     /**
@@ -492,9 +508,7 @@ public class Matrix<T> {
      * @throws IndexOutOfBoundsException If an index is out of bounds.
      */
     public void swapColumns(int x1, int x2) {
-        for (int y = 0; y < rows(); y++) {
-            swap(x1, y, x2, y);
-        }
+        getRowsRange().forEach(y -> swap(x1, y, x2, y));
     }
 
     /**
@@ -537,35 +551,35 @@ public class Matrix<T> {
      */
     public String toString(String cellsDelimiter, String rowsDelimiter, String nullDefault, boolean tabFiller) {
         Sugar.requireNoneNull(List.of(cellsDelimiter, rowsDelimiter, nullDefault));
-        String[][] strings = new String[content.size()][rows()];
+        Matrix<String> strings = new Matrix<>(size());
         int[] maxLength = new int[content.size()];
-        for (int x = 0; x < content.size(); x++) {
-            for (int y = 0; y < rows(); y++) {
-                strings[x][y] = Objects.toString(get(x, y), nullDefault);
-                maxLength[x] = Math.max(maxLength[x], strings[x][y].length());
-            }
-        }
+        getBlock().forEach((x, y) -> {
+            String string = Objects.toString(get(x, y), nullDefault);
+            strings.set(x, y, string);
+            maxLength[x] = Math.max(maxLength[x], string.length());
+        });
         StringBuilder sb = new StringBuilder();
-        for (int y = 0; y < rows(); y++) {
+        getRowsRange().forEach(y -> {
             if (y > 0)
                 sb.append(rowsDelimiter);
             StringBuilder row = new StringBuilder();
-            for (int x = 0; x < content.size(); x++) {
+            getColumnsRange().forEach(x -> {
                 if (x > 0)
                     row.append(cellsDelimiter);
-                row.append(strings[x][y]);
+                String string = strings.get(x, y);
+                row.append(string);
                 if (tabFiller)
-                    row.append(" ".repeat(maxLength[x] - strings[x][y].length()));
-            }
+                    row.append(" ".repeat(maxLength[x] - string.length()));
+            });
             sb.append(row.toString().stripTrailing());
-        }
+        });
         return sb.toString().stripTrailing();
     }
 
     /**
      * X and Y coordinates.
      */
-    public static class Coordinates extends Couple<Integer> {
+    public static final class Coordinates extends Couple<Integer> {
 
         private Coordinates(int x, int y) {
             super(Integer.class, x, y);
@@ -587,7 +601,7 @@ public class Matrix<T> {
     /**
      * A range of coordinates.
      */
-    public static class Block extends Couple<Coordinates> {
+    public static final class Block extends Couple<Coordinates> {
 
         private Block(Coordinates from, Coordinates to) {
             super(Coordinates.class, from, to);
@@ -611,18 +625,37 @@ public class Matrix<T> {
             return getSecond();
         }
 
+        public Coordinates size() {
+            return new Coordinates(getXRange().size(), getYRange().size());
+        }
+
+        /**
+         * Returns the block X range.
+         */
         public Range getXRange() {
             return Range.of(getFrom().getX(), getTo().getX());
         }
 
+        /**
+         * Returns the block Y range.
+         */
         public Range getYRange() {
             return Range.of(getFrom().getY(), getTo().getY());
         }
 
-        public Coordinates size() {
-            return new Coordinates(getTo().getX() - getFrom().getX(), getTo().getY() - getFrom().getY());
+        /**
+         * Performs an action for each cell in the block, from <code>from</code> (inclusive) to <code>to</code>
+         * (exclusive). If either X or Y range is empty, does nothing.
+         */
+        public void forEach(BiConsumer<Integer, Integer> action) {
+            Objects.requireNonNull(action, "Action is null.");
+            forEach(coordinates -> action.accept(coordinates.getX(), coordinates.getY()));
         }
 
+        /**
+         * Performs an action for each cell in the block, from <code>from</code> (inclusive) to <code>to</code>
+         * (exclusive). If either X or Y range is empty, does nothing.
+         */
         public void forEach(Consumer<Coordinates> action) {
             Objects.requireNonNull(action, "Action is null.");
             getXRange().forEach(x -> getYRange().forEach(y -> action.accept(Coordinates.of(x, y))));

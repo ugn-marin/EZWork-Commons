@@ -7,17 +7,17 @@ abstract class Couple<T> {
     private final T first;
     private final T second;
 
-    protected Couple(Class<T> type, T first, T second) {
+    Couple(Class<T> type, T first, T second) {
         this.type = type;
         this.first = first;
         this.second = second;
     }
 
-    protected T getFirst() {
+    T getFirst() {
         return first;
     }
 
-    protected T getSecond() {
+    T getSecond() {
         return second;
     }
 
