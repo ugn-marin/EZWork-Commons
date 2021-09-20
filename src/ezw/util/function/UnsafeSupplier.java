@@ -7,7 +7,7 @@ import java.util.function.Supplier;
 
 /**
  * A functional supplier allowing exceptions, and is convertible to Supplier and Callable.
- * @param <O>
+ * @param <O> The output type.
  */
 @FunctionalInterface
 public interface UnsafeSupplier<O> {

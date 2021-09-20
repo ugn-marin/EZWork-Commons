@@ -314,6 +314,16 @@ public abstract class Sugar {
     }
 
     /**
+     * Returns true if the object is an instance of one or more of the passed classes.
+     * @param object The object.
+     * @param types The classes.
+     * @return True if instance of any, else false.
+     */
+    public static boolean instanceOfAny(Object object, Class<?>... types) {
+        return object != null && Arrays.stream(types).anyMatch(t -> t.isAssignableFrom(object.getClass()));
+    }
+
+    /**
      * Returns a flat union array of the objects passed. That is, for any member being an array, an iterable or a stream
      * itself, the inner members are added to the flat union. The order of the items is preserved as in the members.
      * @param objects An array of objects.
