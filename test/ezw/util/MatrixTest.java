@@ -221,6 +221,7 @@ public class MatrixTest {
                 {'c', 'd'}
         });
         Assertions.assertTrue(matrix.size().equals(2, 2));
+        Assertions.assertEquals(matrix.size(), matrix.getBlock().size());
         assertData("a,b|c,d", matrix);
     }
 

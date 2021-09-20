@@ -1,6 +1,8 @@
 package ezw.util;
 
 import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -25,7 +27,7 @@ public class Matrix<T> {
      * @throws IndexOutOfBoundsException If a coordinate is negative, or only one of the coordinates is zero.
      */
     public Matrix(Coordinates size) {
-        this(size.x, size.y);
+        this(size.getX(), size.getY());
     }
 
     /**
@@ -35,11 +37,9 @@ public class Matrix<T> {
      * @throws IndexOutOfBoundsException If a coordinate is negative, or only one of the coordinates is zero.
      */
     public Matrix(int x, int y) {
-        validateNegative(x);
-        validateNegative(y);
-        if (x * y == 0 && x != y)
+        if (validateNegative(x) * validateNegative(y) == 0 && x != y)
             throw new IndexOutOfBoundsException("The matrix size can't be zero in one dimension.");
-        Sugar.repeat(x, () -> content.add(fill(y)));
+        Sugar.repeat(x, () -> content.add(Sugar.fill(y)));
     }
 
     /**
@@ -74,9 +74,10 @@ public class Matrix<T> {
         return content.isEmpty() ? 0 : Sugar.first(content).size();
     }
 
-    private void validateNegative(int index) {
+    private static int validateNegative(int index) {
         if (index < 0)
             throw new IndexOutOfBoundsException("Index out of bounds: " + index);
+        return index;
     }
 
     /**
@@ -84,7 +85,7 @@ public class Matrix<T> {
      * @throws IndexOutOfBoundsException If a coordinate is out of bounds.
      */
     public T get(Coordinates coordinates) {
-        return get(coordinates.x, coordinates.y);
+        return get(coordinates.getX(), coordinates.getY());
     }
 
     /**
@@ -101,7 +102,7 @@ public class Matrix<T> {
      * @throws IndexOutOfBoundsException If a coordinate is out of bounds.
      */
     public T set(Coordinates coordinates, T element) {
-        return set(coordinates.x, coordinates.y, element);
+        return set(coordinates.getX(), coordinates.getY(), element);
     }
 
     /**
@@ -201,10 +202,8 @@ public class Matrix<T> {
      */
     public List<List<T>> getRows() {
         List<List<T>> rows = new ArrayList<>();
-        for (int y = 0; y < rows(); y++) {
-            int fy = y;
-            rows.add(content.stream().map(column -> column.get(fy)).collect(Collectors.toList()));
-        }
+        getRowsRange().forEach(y -> rows.add(content.stream().map(column -> column.get(y))
+                .collect(Collectors.toList())));
         return rows;
     }
 
@@ -213,6 +212,27 @@ public class Matrix<T> {
      */
     public List<List<T>> getColumns() {
         return content.stream().map(ArrayList::new).collect(Collectors.toList());
+    }
+
+    /**
+     * Returns a range of the matrix row indexes.
+     */
+    public Range getRowsRange() {
+        return Range.of(0, rows());
+    }
+
+    /**
+     * Returns a range of the matrix column indexes.
+     */
+    public Range getColumnsRange() {
+        return Range.of(0, content.size());
+    }
+
+    /**
+     * Returns a block of the matrix.
+     */
+    public Block getBlock() {
+        return new Block(new Coordinates(0, 0), size());
     }
 
     /**
@@ -248,16 +268,13 @@ public class Matrix<T> {
      */
     @SafeVarargs
     public final void addRowBefore(int y, T... row) {
-        validateNegative(y);
-        if (y > rows())
+        if (validateNegative(y) > rows())
             throw new IndexOutOfBoundsException("Row " + y + " can't be added having a total of " + rows());
         boolean wasEmpty = content.isEmpty();
         if (wasEmpty)
-            content.add(fill(1));
+            content.add(Sugar.fill(1));
         Sugar.repeat(Math.max(row.length - content.size(), 0), this::addColumn);
-        for (int x = 0; x < content.size(); x++) {
-            content.get(x).add(y, x < row.length ? row[x] : null);
-        }
+        getColumnsRange().forEach(x -> content.get(x).add(y, x < row.length ? row[x] : null));
         if (wasEmpty)
             removeRow(y + 1);
     }
@@ -274,8 +291,7 @@ public class Matrix<T> {
      */
     @SafeVarargs
     public final void addRowAfter(int y, T... row) {
-        validateNegative(y);
-        addRowBefore(y + 1, row);
+        addRowBefore(validateNegative(y) + 1, row);
     }
 
     /**
@@ -305,12 +321,11 @@ public class Matrix<T> {
      */
     @SafeVarargs
     public final void addColumnBefore(int x, T... column) {
-        validateNegative(x);
-        if (x > content.size())
+        if (validateNegative(x) > content.size())
             throw new IndexOutOfBoundsException("Column " + x + " can't be added having a total of " + content.size());
         boolean wasEmpty = content.isEmpty();
         Sugar.repeat(Math.max(column.length - rows(), 0), this::addRow);
-        var columnContent = fill(Math.max(rows(), 1));
+        List<T> columnContent = Sugar.fill(Math.max(rows(), 1));
         for (int y = 0; y < rows() && y < column.length; y++) {
             columnContent.set(y, column[y]);
         }
@@ -331,14 +346,7 @@ public class Matrix<T> {
      */
     @SafeVarargs
     public final void addColumnAfter(int x, T... column) {
-        validateNegative(x);
-        addColumnBefore(x + 1, column);
-    }
-
-    private List<T> fill(int size) {
-        List<T> list = new ArrayList<>();
-        Sugar.repeat(size, () -> list.add(null));
-        return list;
+        addColumnBefore(validateNegative(x) + 1, column);
     }
 
     /**
@@ -348,8 +356,7 @@ public class Matrix<T> {
      * @throws IndexOutOfBoundsException If the index is out of bounds.
      */
     public List<T> removeRow(int y) {
-        validateNegative(y);
-        if (y >= rows())
+        if (validateNegative(y) >= rows())
             throw new IndexOutOfBoundsException("Row " + y + " doesn't exist in a total of " + rows());
         var row = content.stream().map(column -> column.remove(y)).collect(Collectors.toList());
         if (rows() == 0)
@@ -382,8 +389,7 @@ public class Matrix<T> {
      * @throws IndexOutOfBoundsException If the index is out of bounds.
      */
     public List<T> removeColumn(int x) {
-        validateNegative(x);
-        if (x >= content.size())
+        if (validateNegative(x) >= content.size())
             throw new IndexOutOfBoundsException("Column " + x + " doesn't exist in a total of " + content.size());
         return content.remove(x);
     }
@@ -476,7 +482,7 @@ public class Matrix<T> {
      * @throws IndexOutOfBoundsException If a coordinate is out of bounds.
      */
     public void swap(Coordinates coordinates1, Coordinates coordinates2) {
-        swap(coordinates1.x, coordinates1.y, coordinates2.x, coordinates2.y);
+        swap(coordinates1.getX(), coordinates1.getY(), coordinates2.getX(), coordinates2.getY());
     }
 
     /**
@@ -494,9 +500,7 @@ public class Matrix<T> {
      * @throws IndexOutOfBoundsException If an index is out of bounds.
      */
     public void swapRows(int y1, int y2) {
-        for (int x = 0; x < content.size(); x++) {
-            swap(x, y1, x, y2);
-        }
+        getColumnsRange().forEach(x -> swap(x, y1, x, y2));
     }
 
     /**
@@ -504,9 +508,7 @@ public class Matrix<T> {
      * @throws IndexOutOfBoundsException If an index is out of bounds.
      */
     public void swapColumns(int x1, int x2) {
-        for (int y = 0; y < rows(); y++) {
-            swap(x1, y, x2, y);
-        }
+        getRowsRange().forEach(y -> swap(x1, y, x2, y));
     }
 
     /**
@@ -543,82 +545,113 @@ public class Matrix<T> {
      * @param cellsDelimiter The delimiter between cells in a row. Default is space.
      * @param rowsDelimiter The delimiter between rows. Default is the line separator.
      * @param nullDefault The representation of null cells. Default is empty string.
-     * @param tabFiller True if tab-like spacing in cells is required. Generally speaking, should be true if the rows
+     * @param tabFiller True if tab-like spacing in cells is required. Generally speaking, should be true if the rows'
      *                  delimiter is newline. Default is true.
      * @return The string representation of the matrix.
      */
     public String toString(String cellsDelimiter, String rowsDelimiter, String nullDefault, boolean tabFiller) {
         Sugar.requireNoneNull(List.of(cellsDelimiter, rowsDelimiter, nullDefault));
-        String[][] strings = new String[content.size()][rows()];
+        Matrix<String> strings = new Matrix<>(size());
         int[] maxLength = new int[content.size()];
-        for (int x = 0; x < content.size(); x++) {
-            for (int y = 0; y < rows(); y++) {
-                strings[x][y] = Objects.toString(get(x, y), nullDefault);
-                maxLength[x] = Math.max(maxLength[x], strings[x][y].length());
-            }
+        getBlock().forEach((x, y) -> {
+            String string = Objects.toString(get(x, y), nullDefault);
+            strings.set(x, y, string);
+            if (tabFiller)
+                maxLength[x] = Math.max(maxLength[x], string.length());
+        });
+        if (tabFiller) {
+            getBlock().forEach((x, y) -> {
+                String string = strings.get(x, y);
+                strings.set(x, y, string + " ".repeat(maxLength[x] - string.length()));
+            });
         }
-        StringBuilder sb = new StringBuilder();
-        for (int y = 0; y < rows(); y++) {
-            if (y > 0)
-                sb.append(rowsDelimiter);
-            StringBuilder row = new StringBuilder();
-            for (int x = 0; x < content.size(); x++) {
-                if (x > 0)
-                    row.append(cellsDelimiter);
-                row.append(strings[x][y]);
-                if (tabFiller)
-                    row.append(" ".repeat(maxLength[x] - strings[x][y].length()));
-            }
-            sb.append(row.toString().stripTrailing());
-        }
-        return sb.toString().stripTrailing();
+        return strings.getRows().stream().map(row -> String.join(cellsDelimiter, row).stripTrailing())
+                .collect(Collectors.joining(rowsDelimiter)).stripTrailing();
     }
 
     /**
      * X and Y coordinates.
      */
-    public static class Coordinates {
-        private final int x;
-        private final int y;
+    public static final class Coordinates extends Couple<Integer> {
 
         private Coordinates(int x, int y) {
-            this.x = x;
-            this.y = y;
+            super(Integer.class, x, y);
         }
 
         public static Coordinates of(int x, int y) {
-            return new Coordinates(x, y);
+            return new Coordinates(validateNegative(x), validateNegative(y));
         }
 
         public int getX() {
-            return x;
+            return getFirst();
         }
 
         public int getY() {
-            return y;
+            return getSecond();
+        }
+    }
+
+    /**
+     * A range of coordinates.
+     */
+    public static final class Block extends Couple<Coordinates> {
+
+        private Block(Coordinates from, Coordinates to) {
+            super(Coordinates.class, from, to);
         }
 
-        @Override
-        public boolean equals(Object o) {
-            if (this == o)
-                return true;
-            if (o == null || getClass() != o.getClass())
-                return false;
-            return ((Coordinates) o).equals(x, y);
+        public static Block of(int fromX, int fromY, int toX, int toY) {
+            return of(Coordinates.of(fromX, fromY), Coordinates.of(toX, toY));
         }
 
-        public boolean equals(int x, int y) {
-            return this.x == x && this.y == y;
+        public static Block of(Coordinates from, Coordinates to) {
+            if (from.getX() > to.getX() || from.getY() > to.getY())
+                throw new IllegalArgumentException("Negative block.");
+            return new Block(from, to);
         }
 
-        @Override
-        public int hashCode() {
-            return Objects.hash(x, y);
+        public Coordinates getFrom() {
+            return getFirst();
         }
 
-        @Override
-        public String toString() {
-            return "[" + x + ", " + y + "]";
+        public Coordinates getTo() {
+            return getSecond();
+        }
+
+        public Coordinates size() {
+            return new Coordinates(getXRange().size(), getYRange().size());
+        }
+
+        /**
+         * Returns the block X range.
+         */
+        public Range getXRange() {
+            return Range.of(getFrom().getX(), getTo().getX());
+        }
+
+        /**
+         * Returns the block Y range.
+         */
+        public Range getYRange() {
+            return Range.of(getFrom().getY(), getTo().getY());
+        }
+
+        /**
+         * Performs an action for each cell in the block, from <code>from</code> (inclusive) to <code>to</code>
+         * (exclusive). If either X or Y range is empty, does nothing.
+         */
+        public void forEach(BiConsumer<Integer, Integer> action) {
+            Objects.requireNonNull(action, "Action is null.");
+            forEach(coordinates -> action.accept(coordinates.getX(), coordinates.getY()));
+        }
+
+        /**
+         * Performs an action for each cell in the block, from <code>from</code> (inclusive) to <code>to</code>
+         * (exclusive). If either X or Y range is empty, does nothing.
+         */
+        public void forEach(Consumer<Coordinates> action) {
+            Objects.requireNonNull(action, "Action is null.");
+            getXRange().forEach(x -> getYRange().forEach(y -> action.accept(Coordinates.of(x, y))));
         }
     }
 }
