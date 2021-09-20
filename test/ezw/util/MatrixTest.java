@@ -1216,6 +1216,60 @@ public class MatrixTest {
     }
 
     @Test
+    void flip2x2() {
+        var matrix = new Matrix<Character>();
+        matrix.addRow('a', 'b');
+        matrix.addRow('c', 'd');
+        Assertions.assertTrue(matrix.size().equals(2, 2));
+        matrix.flip();
+        Assertions.assertTrue(matrix.size().equals(2, 2));
+        assertData("a,c|b,d", matrix);
+    }
+
+    @Test
+    void flip2x3() {
+        var matrix = new Matrix<Character>();
+        matrix.addRow('a', 'b');
+        matrix.addRow('c', 'd');
+        matrix.addRow('e', 'f');
+        Assertions.assertTrue(matrix.size().equals(2, 3));
+        matrix.flip();
+        Assertions.assertTrue(matrix.size().equals(3, 2));
+        assertData("a,c,e|b,d,f", matrix);
+    }
+
+    @Test
+    void flip3x2() {
+        var matrix = new Matrix<Character>();
+        matrix.addRow('a', 'b', 'c');
+        matrix.addRow('d', 'e', 'f');
+        Assertions.assertTrue(matrix.size().equals(3, 2));
+        matrix.flip();
+        Assertions.assertTrue(matrix.size().equals(2, 3));
+        assertData("a,d|b,e|c,f", matrix);
+    }
+
+    @Test
+    void turnClockwise() {
+        var matrix = new Matrix<Character>();
+        matrix.addRow('a', 'b');
+        matrix.addRow('c', 'd');
+        matrix.turnClockwise();
+        Assertions.assertTrue(matrix.size().equals(2, 2));
+        assertData("c,a|d,b", matrix);
+    }
+
+    @Test
+    void turnCounterClockwise() {
+        var matrix = new Matrix<Character>();
+        matrix.addRow('a', 'b');
+        matrix.addRow('c', 'd');
+        matrix.turnCounterClockwise();
+        Assertions.assertTrue(matrix.size().equals(2, 2));
+        assertData("b,d|a,c", matrix);
+    }
+
+    @Test
     void equals() {
         var matrix1 = new Matrix<Character>();
         matrix1.addRow('a', 'b');

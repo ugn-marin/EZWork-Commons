@@ -525,6 +525,31 @@ public class Matrix<T> {
         content.forEach(Collections::reverse);
     }
 
+    /**
+     * Changes the matrix rows into columns, effectively flipping it along the diagonal. Affects the size accordingly.
+     */
+    public void flip() {
+        var rows = getRows();
+        clear();
+        content.addAll(rows);
+    }
+
+    /**
+     * Turns the matrix 90 degrees clockwise. Affects the size accordingly.
+     */
+    public void turnClockwise() {
+        flip();
+        reverseX();
+    }
+
+    /**
+     * Turns the matrix 90 degrees counter-clockwise. Affects the size accordingly.
+     */
+    public void turnCounterClockwise() {
+        flip();
+        reverseY();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o)
