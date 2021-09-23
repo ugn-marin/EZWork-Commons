@@ -3,8 +3,8 @@ package ezw.concurrent;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * A synchronization aid that allows one or more threads to wait until the <code>release</code> method is called.
- * Equivalent to a <code>CountDownLatch</code> with a count of 1.
+ * A synchronization aid that allows one or more threads to wait until the {@link #release} method is called. Equivalent
+ * to a <code>CountDownLatch</code> with a count of 1.
  */
 public class Latch {
     private final CountDownLatch countDownLatch;
