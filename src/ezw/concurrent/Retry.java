@@ -36,23 +36,19 @@ public final class Retry<O> implements Callable<O> {
 
     /**
      * Constructs a builder of a retry.
-     * @param callable The callable.
      * @param tries The number of tries before throwing the exception.
-     * @param <O> The output type.
      * @return The builder.
      */
-    public static <O> Builder<O> of(Callable<O> callable, int tries) {
-        return new Builder<>(callable, tries);
+    public static Builder of(int tries) {
+        return new Builder(tries);
     }
 
     /**
      * Constructs a builder of an indefinite retry.
-     * @param callable The callable.
-     * @param <O> The output type.
      * @return The builder.
      */
-    public static <O> Builder<O> indefinitely(Callable<O> callable) {
-        return of(callable, Integer.MAX_VALUE);
+    public static Builder indefinitely() {
+        return of(Integer.MAX_VALUE);
     }
 
     /**
@@ -91,17 +87,14 @@ public final class Retry<O> implements Callable<O> {
 
     /**
      * A retry builder.
-     * @param <O> The retry output type.
      */
-    public static final class Builder<O> {
-        private final Callable<O> callable;
+    public static final class Builder {
         private final int tries;
         private Function<Integer, Long> intervalFunction;
         private BiPredicate<Integer, Exception> continuePredicate;
         private Function<List<Exception>, Exception> exceptionsReducer;
 
-        private Builder(Callable<O> callable, int tries) {
-            this.callable = Objects.requireNonNull(callable, "Callable is null.");
+        private Builder(int tries) {
             this.tries = Sugar.requireRange(tries, 1, null);
         }
 
@@ -111,7 +104,7 @@ public final class Retry<O> implements Callable<O> {
          * @param intervalFunction A function getting the retry number, returning the number of milliseconds to sleep.
          * @return This builder.
          */
-        public Builder<O> interval(Function<Integer, Long> intervalFunction) {
+        public Builder interval(Function<Integer, Long> intervalFunction) {
             this.intervalFunction = intervalFunction;
             return this;
         }
@@ -121,7 +114,7 @@ public final class Retry<O> implements Callable<O> {
          * @param interval The interval in milliseconds.
          * @return This builder.
          */
-        public Builder<O> intervalConstant(long interval) {
+        public Builder intervalConstant(long interval) {
             return interval(retry -> interval);
         }
 
@@ -129,12 +122,12 @@ public final class Retry<O> implements Callable<O> {
          * Sets the function calculating the sleeping interval between each retry as a growing progression, starting
          * with <code>interval</code> and growing by the same interval with each retry until reaching <code>max</code>.
          * In other words:<br>
-         * <i>(1 * interval, 2 * interval, ..., max)</i>
+         * <i>(1 * interval, 2 * interval,  3 * interval, ..., max)</i>
          * @param interval The initial interval.
          * @param max The maximum interval the progression will reach.
          * @return This builder.
          */
-        public Builder<O> intervalProgression(long interval, long max) {
+        public Builder intervalProgression(long interval, long max) {
             return interval(retry -> Math.min(interval * retry, max));
         }
 
@@ -146,31 +139,33 @@ public final class Retry<O> implements Callable<O> {
          *                          should continue, else false.
          * @return This builder.
          */
-        public Builder<O> continueWhile(BiPredicate<Integer, Exception> continuePredicate) {
+        public Builder continueWhile(BiPredicate<Integer, Exception> continuePredicate) {
             this.continuePredicate = continuePredicate;
             return this;
         }
 
         /**
          * Sets the function choosing or constructing the exception based on the list of the exceptions received on all
-         * retries. The default logic is throwing the last exception.
+         * retries. The default logic is throwing the last exception (<code>Sugar::last</code>).
          * @param exceptionsReducer A function getting the retries exceptions list, returning the exception to throw.
          * @return This builder.
          */
-        public Builder<O> reduce(Function<List<Exception>, Exception> exceptionsReducer) {
+        public Builder reduce(Function<List<Exception>, Exception> exceptionsReducer) {
             this.exceptionsReducer = exceptionsReducer;
             return this;
         }
 
         /**
-         * Builds the retry.
+         * Builds a retry.
+         * @param callable The callable.
          * @return The retry.
          */
-        public Retry<O> build() {
-            return new Retry<>(callable, tries, Objects.requireNonNullElse(intervalFunction, t -> 0L),
-                    Objects.requireNonNullElse(continuePredicate, blacklist(InterruptedException.class,
-                            InterruptedRuntimeException.class, ClosedByInterruptException.class,
-                            InterruptedIOException.class)), Objects.requireNonNullElse(exceptionsReducer, Sugar::last));
+        public <O> Retry<O> build(Callable<O> callable) {
+            return new Retry<>(Objects.requireNonNull(callable, "Callable is null."), tries,
+                    Objects.requireNonNullElse(intervalFunction, t -> 0L), Objects.requireNonNullElse(continuePredicate,
+                    blacklist(InterruptedException.class, InterruptedRuntimeException.class,
+                            ClosedByInterruptException.class, InterruptedIOException.class)),
+                    Objects.requireNonNullElse(exceptionsReducer, Sugar::last));
         }
     }
 }

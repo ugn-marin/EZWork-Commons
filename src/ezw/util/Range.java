@@ -24,16 +24,33 @@ public final class Range extends Couple<Integer> {
         return getSecond();
     }
 
+    /**
+     * Returns <code>to - from</code> (might be negative).
+     */
     public int size() {
         return getTo() - getFrom();
     }
 
+    /**
+     * Returns true if the range size is zero.
+     */
     public boolean isEmpty() {
         return size() == 0;
     }
 
+    /**
+     * Returns the signum function of the range size.
+     */
     public int signum() {
         return Integer.signum(size());
+    }
+
+    /**
+     * Returns true if the value is between <code>from</code> (inclusive) and <code>to</code> (exclusive).
+     */
+    public boolean contains(int value) {
+        return (signum() == 1 && value >= getFrom() && value < getTo()) ||
+                (signum() == -1 && value <= getFrom() && value > getTo());
     }
 
     /**

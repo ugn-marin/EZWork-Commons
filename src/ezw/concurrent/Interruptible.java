@@ -84,11 +84,24 @@ public abstract class Interruptible {
      * <pre>
      * Interruptible.run(object::wait);
      * </pre>
-     * @param object The object
+     * @param object The object.
      * @throws InterruptedRuntimeException If interrupted.
      */
     public static void wait(Object object) throws InterruptedRuntimeException {
         run(object::wait);
+    }
+
+    /**
+     * Runs the limiter's <code>begin</code> method, wrapping the <code>InterruptedException</code> in an
+     * <code>InterruptedRuntimeException</code>. Equivalent to:
+     * <pre>
+     * Interruptible.run(limiter::begin);
+     * </pre>
+     * @param limiter The limiter.
+     * @throws InterruptedRuntimeException If interrupted.
+     */
+    public static void begin(Limiter limiter) throws InterruptedRuntimeException {
+        run(limiter::begin);
     }
 
     /**
