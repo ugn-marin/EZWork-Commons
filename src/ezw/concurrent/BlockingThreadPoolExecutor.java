@@ -2,7 +2,6 @@ package ezw.concurrent;
 
 import java.util.Objects;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A thread pool executor with a maximum pool size, where reaching that size will get threads trying to submit any more
@@ -16,7 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Every task submitting is preceded by an interruption validation.
  */
 public class BlockingThreadPoolExecutor extends ThreadPoolExecutor {
-    private final AtomicInteger submittedCount = new AtomicInteger();
+    private final Limiter limiter;
 
     /**
      * Constructs a new blocking thread pool executor with a maximum pool size.
@@ -25,6 +24,7 @@ public class BlockingThreadPoolExecutor extends ThreadPoolExecutor {
     public BlockingThreadPoolExecutor(int maximumPoolSize) {
         super(maximumPoolSize, maximumPoolSize, 1, TimeUnit.MINUTES, new LinkedBlockingQueue<>());
         allowCoreThreadTimeOut(true);
+        limiter = new Limiter(maximumPoolSize);
     }
 
     @Override
@@ -46,24 +46,18 @@ public class BlockingThreadPoolExecutor extends ThreadPoolExecutor {
     public void execute(Runnable command) throws InterruptedRuntimeException {
         Objects.requireNonNull(command);
         Interruptible.validateInterruptedRuntime();
-        synchronized (submittedCount) {
-            // Wait at maximum
-            while (submittedCount.get() == getMaximumPoolSize()) {
-                Interruptible.wait(submittedCount);
-            }
-            // Increment tasks count and submit
-            submittedCount.incrementAndGet();
+        Interruptible.begin(limiter);
+        try {
             super.execute(() -> {
                 try {
                     command.run();
                 } finally {
-                    // Update task done
-                    synchronized (submittedCount) {
-                        submittedCount.decrementAndGet();
-                        submittedCount.notifyAll();
-                    }
+                    limiter.end();
                 }
             });
+        } catch (RejectedExecutionException e) {
+            limiter.end();
+            throw e;
         }
     }
 }
