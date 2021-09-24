@@ -1,4 +1,6 @@
-package ezw.util;
+package ezw.data;
+
+import ezw.Sugar;
 
 import java.util.*;
 import java.util.function.BiConsumer;

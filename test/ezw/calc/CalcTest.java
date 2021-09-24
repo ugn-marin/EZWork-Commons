@@ -1,4 +1,4 @@
-package ezw.util.calc;
+package ezw.calc;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

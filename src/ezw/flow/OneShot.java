@@ -1,4 +1,4 @@
-package ezw.concurrent;
+package ezw.flow;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 

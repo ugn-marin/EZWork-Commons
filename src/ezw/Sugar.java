@@ -1,6 +1,6 @@
-package ezw.util;
+package ezw;
 
-import ezw.util.function.UnsafeConsumer;
+import ezw.function.UnsafeConsumer;
 
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.*;

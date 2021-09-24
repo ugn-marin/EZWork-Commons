@@ -1,4 +1,4 @@
-package ezw.util;
+package ezw.data;
 
 import java.util.Objects;
 import java.util.function.Consumer;
