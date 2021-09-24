@@ -39,6 +39,7 @@ public class Limiter {
      * @throws InterruptedException If interrupted.
      */
     public void begin() throws InterruptedException {
+        Interruptible.validateInterrupted();
         synchronized (executing) {
             while (executing.get() == limit) {
                 executing.wait();

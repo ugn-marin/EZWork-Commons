@@ -45,7 +45,6 @@ public class BlockingThreadPoolExecutor extends ThreadPoolExecutor {
     @Override
     public void execute(Runnable command) throws InterruptedRuntimeException {
         Objects.requireNonNull(command);
-        Interruptible.validateInterruptedRuntime();
         Interruptible.begin(limiter);
         try {
             super.execute(() -> {
