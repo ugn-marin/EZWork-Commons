@@ -1,9 +1,9 @@
-package ezw.util.os;
+package ezw.os;
 
+import ezw.Sugar;
+import ezw.calc.Units;
 import ezw.concurrent.Concurrent;
 import ezw.concurrent.Interruptible;
-import ezw.util.Sugar;
-import ezw.util.calc.Units;
 
 import java.io.*;
 import java.util.*;

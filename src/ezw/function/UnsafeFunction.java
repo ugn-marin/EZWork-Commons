@@ -1,6 +1,6 @@
-package ezw.util.function;
+package ezw.function;
 
-import ezw.util.Sugar;
+import ezw.Sugar;
 
 import java.util.function.Function;
 

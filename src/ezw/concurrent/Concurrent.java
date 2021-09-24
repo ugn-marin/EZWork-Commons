@@ -1,7 +1,7 @@
 package ezw.concurrent;
 
-import ezw.util.Sugar;
-import ezw.util.function.UnsafeRunnable;
+import ezw.Sugar;
+import ezw.function.UnsafeRunnable;
 
 import java.util.Arrays;
 import java.util.concurrent.*;

@@ -1,4 +1,4 @@
-package ezw.util;
+package ezw.data;
 
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -12,6 +12,9 @@ public final class Range extends Couple<Integer> {
         super(Integer.class, from, to);
     }
 
+    /**
+     * Constructs a range.
+     */
     public static Range of(int from, int to) {
         return new Range(from, to);
     }

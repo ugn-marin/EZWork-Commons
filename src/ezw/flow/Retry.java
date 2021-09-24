@@ -1,6 +1,7 @@
-package ezw.concurrent;
+package ezw.flow;
 
-import ezw.util.Sugar;
+import ezw.Sugar;
+import ezw.concurrent.InterruptedRuntimeException;
 
 import java.io.InterruptedIOException;
 import java.nio.channels.ClosedByInterruptException;

@@ -1,4 +1,4 @@
-package ezw.util.calc;
+package ezw.calc;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

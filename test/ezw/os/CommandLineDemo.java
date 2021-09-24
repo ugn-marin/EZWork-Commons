@@ -1,6 +1,6 @@
-package ezw.util.os;
+package ezw.os;
 
-import ezw.util.Sugar;
+import ezw.Sugar;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;

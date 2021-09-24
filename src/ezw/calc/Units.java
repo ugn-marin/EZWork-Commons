@@ -1,6 +1,6 @@
-package ezw.util.calc;
+package ezw.calc;
 
-import ezw.util.Sugar;
+import ezw.Sugar;
 
 import java.util.Arrays;
 

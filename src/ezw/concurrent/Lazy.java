@@ -1,6 +1,6 @@
 package ezw.concurrent;
 
-import ezw.util.Sugar;
+import ezw.Sugar;
 
 import java.util.Objects;
 import java.util.concurrent.Callable;
