@@ -157,7 +157,7 @@ public final class Retry<O> implements Callable<O> {
         }
 
         /**
-         * Builds a retry.
+         * Builds a retry. Can be reused for new callables if no stateful functions were provided to the builder.
          * @param callable The callable.
          * @return The retry.
          */

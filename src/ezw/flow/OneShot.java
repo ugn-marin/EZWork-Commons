@@ -9,7 +9,7 @@ public class OneShot {
     private final AtomicBoolean checked = new AtomicBoolean();
 
     /**
-     * Validates that the method wasn't previously called on this instance.
+     * Validates that the method hasn't previously been called on this instance.
      * @param error The exception message in case this is not the first call.
      * @throws IllegalStateException If this is not the first call.
      */
