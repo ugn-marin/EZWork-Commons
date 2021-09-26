@@ -1,4 +1,4 @@
-package ezw.os;
+package ezw.runtime;
 
 import ezw.Sugar;
 
