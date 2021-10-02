@@ -71,25 +71,6 @@ public class CalcTest {
     }
 
     @Test
-    void throughput() {
-        Throughput t1 = new Throughput();
-        t1.addSizeBytes(Units.Size.MB);
-        t1.addSizeBytes(Units.Size.MB);
-        t1.addTimeNano(Units.Time.SECOND * 1000000);
-        Assertions.assertEquals(2, t1.getMBSec());
-
-        Throughput t2 = new Throughput();
-        t2.addSizeBytes(Units.Size.MB * 40);
-        t2.addTimeNano(Units.Time.SECOND * 5000000);
-        Assertions.assertEquals(8, t2.getMBSec());
-
-        Throughput avg = new Throughput();
-        avg.add(t1);
-        avg.add(t2);
-        Assertions.assertEquals(7, avg.getMBSec());
-    }
-
-    @Test
     void zip() throws IOException {
         String text = "There's nothing special about this text, but repeating it will make it easy to zip.".repeat(999);
         byte[] utf8 = text.getBytes(StandardCharsets.UTF_8);
