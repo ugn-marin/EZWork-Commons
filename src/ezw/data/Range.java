@@ -2,6 +2,7 @@ package ezw.data;
 
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /**
  * A range of integers.
@@ -57,13 +58,22 @@ public final class Range extends Couple<Integer> {
     }
 
     /**
+     * Returns a stream of the range values, from <code>from</code> (inclusive) to <code>to</code> (exclusive). If the
+     * range is empty, returns an empty stream.
+     */
+    public Stream<Integer> stream() {
+        return Stream.iterate(getFrom(), i -> i != getTo(), i -> i + signum());
+    }
+
+    /**
      * Performs an action for each value in this range, from <code>from</code> (inclusive) to <code>to</code>
-     * (exclusive). If the range is empty, does nothing.
+     * (exclusive). If the range is empty, does nothing. Equivalent to:
+     * <pre>
+     * stream().forEach(action);
+     * </pre>
      */
     public void forEach(Consumer<Integer> action) {
         Objects.requireNonNull(action, "Action is null.");
-        for (int i = getFrom(); i != getTo(); i += signum()) {
-            action.accept(i);
-        }
+        stream().forEach(action);
     }
 }
