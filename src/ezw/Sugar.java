@@ -1,6 +1,7 @@
 package ezw;
 
 import ezw.function.UnsafeConsumer;
+import ezw.function.UnsafeRunnable;
 
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.*;
@@ -96,6 +97,16 @@ public abstract class Sugar {
                 throw sneaky(e);
             }
         };
+    }
+
+    /**
+     * Runs an unsafe runnable as a runnable. Equivalent to:
+     * <pre>
+     * runnable.toRunnable().run();
+     * </pre>
+     */
+    public static void sneaky(UnsafeRunnable runnable) {
+        Objects.requireNonNull(runnable, "Runnable is null.").toRunnable().run();
     }
 
     /**
