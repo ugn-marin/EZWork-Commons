@@ -27,6 +27,13 @@ public class BlockingThreadPoolExecutor extends ThreadPoolExecutor {
         limiter = new Limiter(maximumPoolSize);
     }
 
+    /**
+     * Returns the approximate number of threads blocked trying to submit new tasks.
+     */
+    public int getBlocked() {
+        return limiter.getBlocked();
+    }
+
     @Override
     public Future<?> submit(Runnable task) throws InterruptedRuntimeException {
         return super.submit(task);

@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class Limiter {
     private final int limit;
+    private final AtomicInteger blocked = new AtomicInteger();
     private final AtomicInteger executing = new AtomicInteger();
 
     /**
@@ -27,6 +28,13 @@ public class Limiter {
     }
 
     /**
+     * Returns the approximate number of threads blocked on the limit.
+     */
+    public int getBlocked() {
+        return blocked.get();
+    }
+
+    /**
      * Returns the current registered operations count.
      */
     public int getExecuting() {
@@ -40,9 +48,14 @@ public class Limiter {
      */
     public void begin() throws InterruptedException {
         Interruptible.validateInterrupted();
+        blocked.incrementAndGet();
         synchronized (executing) {
-            while (executing.get() == limit) {
-                executing.wait();
+            try {
+                while (executing.get() == limit) {
+                    executing.wait();
+                }
+            } finally {
+                blocked.decrementAndGet();
             }
             executing.incrementAndGet();
         }
