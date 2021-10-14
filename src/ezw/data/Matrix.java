@@ -449,15 +449,25 @@ public class Matrix<T> {
     }
 
     /**
-     * Removes trailing rows and/or columns where all cells are null.
-     * @param rows True if packing rows is required.
-     * @param columns True if packing columns is required.
+     * Removes trailing rows and columns where all cells are null.
      */
-    public void pack(boolean rows, boolean columns) {
-        if (rows)
-            pack(this::getLastRow, this::removeLastRow);
-        if (columns)
-            pack(this::getLastColumn, this::removeLastColumn);
+    public void pack() {
+        packRows();
+        packColumns();
+    }
+
+    /**
+     * Removes trailing rows where all cells are null.
+     */
+    public void packRows() {
+        pack(this::getLastRow, this::removeLastRow);
+    }
+
+    /**
+     * Removes trailing columns where all cells are null.
+     */
+    public void packColumns() {
+        pack(this::getLastColumn, this::removeLastColumn);
     }
 
     private void pack(Supplier<List<T>> getLast, Runnable removeLast) {

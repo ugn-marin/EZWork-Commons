@@ -128,14 +128,14 @@ public final class Retry<O> implements Callable<O> {
          * @param max The maximum interval the progression will reach.
          * @return This builder.
          */
-        public Builder intervalProgression(long interval, long max) {
+        public Builder intervalGrowing(long interval, long max) {
             return interval(retry -> Math.min(interval * retry, max));
         }
 
         /**
          * Sets the predicate deciding whether to continue on an exception. Can be based on a blacklist or a whitelist
          * of exception types (with the help of the <code>blacklist</code> and <code>whitelist</code> methods
-         * accordingly), or any other logic. The default logic is a blacklist of interruption exceptions.
+         * accordingly), or any other logic. The default logic is a blacklist of common interruption exception types.
          * @param continuePredicate A bi-predicate getting the retry number and the exception, returning true if retries
          *                          should continue, else false.
          * @return This builder.
