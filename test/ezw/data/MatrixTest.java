@@ -1146,7 +1146,7 @@ public class MatrixTest {
         matrix.addColumn();
         Assertions.assertTrue(matrix.size().equals(4, 4));
         assertData("a,b,null,null|c,d,null,null|null,null,null,null|null,null,null,null", matrix);
-        matrix.pack(true, false);
+        matrix.packRows();
         Assertions.assertTrue(matrix.size().equals(4, 2));
         assertData("a,b,null,null|c,d,null,null", matrix);
     }
@@ -1162,13 +1162,13 @@ public class MatrixTest {
         matrix.addColumn();
         Assertions.assertTrue(matrix.size().equals(4, 4));
         assertData("a,b,null,null|c,d,null,null|null,null,null,null|null,null,null,null", matrix);
-        matrix.pack(false, true);
+        matrix.packColumns();
         Assertions.assertTrue(matrix.size().equals(2, 4));
         assertData("a,b|c,d|null,null|null,null", matrix);
     }
 
     @Test
-    void packBoth() {
+    void pack() {
         var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
@@ -1178,7 +1178,7 @@ public class MatrixTest {
         matrix.addColumn();
         Assertions.assertTrue(matrix.size().equals(4, 4));
         assertData("a,b,null,null|c,d,null,null|null,null,null,null|null,null,null,null", matrix);
-        matrix.pack(true, true);
+        matrix.pack();
         Assertions.assertTrue(matrix.size().equals(2, 2));
         assertData("a,b|c,d", matrix);
     }
@@ -1191,7 +1191,7 @@ public class MatrixTest {
         matrix.addColumn();
         Assertions.assertTrue(matrix.size().equals(2, 2));
         assertData("null,null|null,null", matrix);
-        matrix.pack(true, true);
+        matrix.pack();
         Assertions.assertTrue(matrix.isEmpty());
     }
 
