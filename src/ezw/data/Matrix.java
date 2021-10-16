@@ -684,7 +684,7 @@ public class Matrix<T> {
 
         /**
          * Returns a stream of the block coordinates, from <code>from</code> (inclusive) to <code>to</code> (exclusive).
-         * If either X or Y range is empty, does nothing.
+         * If either X or Y range is empty, returns an empty stream.
          */
         public Stream<Coordinates> stream() {
             var yRange = getYRange();
