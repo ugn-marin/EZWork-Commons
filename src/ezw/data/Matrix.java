@@ -520,7 +520,9 @@ public class Matrix<T> {
      * @throws IndexOutOfBoundsException If an index is out of bounds.
      */
     public void swapColumns(int x1, int x2) {
-        getRowsRange().forEach(y -> swap(x1, y, x2, y));
+        var temp = content.get(x1);
+        content.set(x1, content.get(x2));
+        content.set(x2, temp);
     }
 
     /**
@@ -674,6 +676,22 @@ public class Matrix<T> {
         }
 
         /**
+         * Returns true if the block contains the coordinates.
+         */
+        public boolean contains(Coordinates coordinates) {
+            return getXRange().contains(coordinates.getX()) && getYRange().contains(coordinates.getY());
+        }
+
+        /**
+         * Returns a stream of the block coordinates, from <code>from</code> (inclusive) to <code>to</code> (exclusive).
+         * If either X or Y range is empty, does nothing.
+         */
+        public Stream<Coordinates> stream() {
+            var yRange = getYRange();
+            return getXRange().stream().flatMap(x -> yRange.stream().map(y -> Coordinates.of(x, y)));
+        }
+
+        /**
          * Performs an action for each cell in the block, from <code>from</code> (inclusive) to <code>to</code>
          * (exclusive). If either X or Y range is empty, does nothing.
          */
@@ -684,11 +702,14 @@ public class Matrix<T> {
 
         /**
          * Performs an action for each cell in the block, from <code>from</code> (inclusive) to <code>to</code>
-         * (exclusive). If either X or Y range is empty, does nothing.
+         * (exclusive). If either X or Y range is empty, does nothing. Equivalent to:
+         * <pre>
+         * stream().forEach(action);
+         * </pre>
          */
         public void forEach(Consumer<Coordinates> action) {
             Objects.requireNonNull(action, "Action is null.");
-            getXRange().forEach(x -> getYRange().forEach(y -> action.accept(Coordinates.of(x, y))));
+            stream().forEach(action);
         }
     }
 }

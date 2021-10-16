@@ -1115,6 +1115,18 @@ public class MatrixTest {
     }
 
     @Test
+    void contains() {
+        var matrix = new Matrix<String>();
+        matrix.addRow("a", "b", "c");
+        matrix.addRow("d", "e", "f");
+        matrix.addRow("g", "h", "i");
+        Assertions.assertTrue(matrix.getBlock().contains(Matrix.Coordinates.of(0, 0)));
+        Assertions.assertTrue(matrix.getBlock().contains(Matrix.Coordinates.of(2, 2)));
+        Assertions.assertFalse(matrix.getBlock().contains(Matrix.Coordinates.of(3, 0)));
+        Assertions.assertFalse(matrix.getBlock().contains(Matrix.Coordinates.of(0, 3)));
+    }
+
+    @Test
     void updates() {
         var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
