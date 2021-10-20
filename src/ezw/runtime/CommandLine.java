@@ -8,7 +8,6 @@ import ezw.concurrent.Interruptible;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -206,14 +205,14 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
     }
 
     @Override
-    public CommandLineResult call() throws IOException, InterruptedException, ExecutionException {
+    public CommandLineResult call() throws Exception {
         lock.lockInterruptibly();
         try {
             CommandLineResult result = new CommandLineResult();
             long startNano = System.nanoTime();
             process = processBuilder.start();
             if (collectOutput)
-                Concurrent.parallel(getOutputReader(false, result), getOutputReader(true, result));
+                Concurrent.run(Sugar::last, getOutputReader(false, result), getOutputReader(true, result));
             return result.returned(process.waitFor(), startNano);
         } finally {
             lock.unlock();

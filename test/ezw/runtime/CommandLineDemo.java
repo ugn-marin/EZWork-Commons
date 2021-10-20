@@ -2,12 +2,9 @@ package ezw.runtime;
 
 import ezw.Sugar;
 
-import java.io.IOException;
-import java.util.concurrent.ExecutionException;
-
 public class CommandLineDemo {
 
-    public static void main(String[] args) throws IOException, ExecutionException, InterruptedException {
+    public static void main(String[] args) throws Exception {
         var hostnameCommand = new CommandLine("hostname");
         hostnameCommand.setNoPrints();
         var hostname = hostnameCommand.call();
@@ -26,7 +23,7 @@ public class CommandLineDemo {
 
     private static class Ping extends CommandLine {
 
-        public static void main(String[] args) throws IOException, ExecutionException, InterruptedException {
+        public static void main(String[] args) throws Exception {
             System.exit(new Ping(Sugar.first(args)).call().getExitStatus());
         }
 

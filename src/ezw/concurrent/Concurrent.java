@@ -1,65 +1,67 @@
 package ezw.concurrent;
 
 import ezw.Sugar;
+import ezw.function.Reducer;
 import ezw.function.UnsafeRunnable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Various concurrency utilities.
  */
 public abstract class Concurrent {
+    private static final Lazy<ExecutorService> cachedPool = new Lazy<>(() -> Executors.newCachedThreadPool(
+            namedThreadFactory(Concurrent.class.getSimpleName())));
 
     private Concurrent() {}
 
     /**
-     * Submits an unsafe runnable into the commonPool.
-     * @param task A short calculation task.
+     * Submits an unsafe runnable into the cached pool.
+     * @param task A task.
      * @return The task's future.
      */
-    public static Future<Void> calculate(UnsafeRunnable task) {
-        return calculate(task.toVoidCallable());
+    public static Future<Void> run(UnsafeRunnable task) {
+        return run(task.toVoidCallable());
     }
 
     /**
-     * Submits a callable into the commonPool.
-     * @param task A short calculation task.
+     * Submits a callable into the cached pool.
+     * @param task A task.
      * @param <T> The task's result type.
      * @return The task's future.
      */
-    public static <T> Future<T> calculate(Callable<T> task) {
-        return ForkJoinPool.commonPool().submit(task);
+    public static <T> Future<T> run(Callable<T> task) {
+        return cachedPool.get().submit(task);
     }
 
     /**
-     * Submits several runnable tasks into a fixed pool, waits for all tasks completion.
-     * @param tasks Blocking tasks.
-     * @throws ExecutionException If any of the tasks failed.
-     * @throws InterruptedException If interrupted.
+     * Submits several unsafe runnable tasks into the cached pool, waits for all tasks completion.
+     * @param tasks The tasks.
      */
-    public static void parallel(Runnable... tasks) throws ExecutionException, InterruptedException {
-        var pool = Executors.newFixedThreadPool(Sugar.requireFull(tasks).length);
-        try {
-            getAll(Arrays.stream(tasks).map(pool::submit).toArray(Future[]::new));
-        } finally {
-            join(pool);
-        }
+    public static void run(Reducer<Exception> exceptionsReducer, Runnable... tasks) throws Exception {
+        getAll(exceptionsReducer, Arrays.stream(Sugar.requireFull(tasks)).map(task -> run(task::run))
+                .toArray(Future[]::new));
     }
 
     /**
      * Calls <code>get</code> for each future. In other words, waits if necessary for all futures' tasks completion.
-     * Recursive: If any future result is a future itself, waits for it as well.
      * @param futures The futures.
-     * @throws ExecutionException If any of the futures' computation failed.
-     * @throws InterruptedException If interrupted.
      */
-    public static void getAll(Future<?>... futures) throws ExecutionException, InterruptedException {
+    public static void getAll(Reducer<Exception> exceptionsReducer, Future<?>... futures) throws Exception {
+        Lazy<List<Exception>> exceptions = new Lazy<>(ArrayList::new);
         for (var future : Sugar.requireFull(futures)) {
-            var result = future.get();
-            if (result instanceof Future)
-                getAll((Future<?>) result);
+            try {
+                future.get();
+            } catch (InterruptedException | ExecutionException e) {
+                exceptions.get().add(e);
+            }
         }
+        if (exceptions.isCalculated())
+            throw exceptionsReducer.apply(exceptions.get());
     }
 
     /**
@@ -71,5 +73,36 @@ public abstract class Concurrent {
         executorService.shutdown();
         if (!executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS))
             throw new InterruptedException();
+    }
+
+    /**
+     * Constructs a thread factory naming the threads as name and thread number: <code>"name #"</code>
+     * @param name The name.
+     * @return The thread factory.
+     */
+    public static ThreadFactory namedThreadFactory(String name) {
+        return new NamedThreadFactory(name);
+    }
+
+    private static class NamedThreadFactory implements ThreadFactory {
+        private final String name;
+        private final ThreadGroup group;
+        private final AtomicInteger threadNumber = new AtomicInteger();
+
+        NamedThreadFactory(String name) {
+            this.name = name;
+            var sm = System.getSecurityManager();
+            group = sm != null ? sm.getThreadGroup() : Thread.currentThread().getThreadGroup();
+        }
+
+        @Override
+        public Thread newThread(Runnable task) {
+            var thread = new Thread(group, task, name + " " + threadNumber.incrementAndGet(), 0);
+            if (thread.isDaemon())
+                thread.setDaemon(false);
+            if (thread.getPriority() != Thread.NORM_PRIORITY)
+                thread.setPriority(Thread.NORM_PRIORITY);
+            return thread;
+        }
     }
 }
