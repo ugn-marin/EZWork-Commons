@@ -2,6 +2,7 @@ package ezw.flow;
 
 import ezw.Sugar;
 import ezw.concurrent.InterruptedRuntimeException;
+import ezw.function.Reducer;
 
 import java.io.InterruptedIOException;
 import java.nio.channels.ClosedByInterruptException;
@@ -19,17 +20,14 @@ import java.util.function.Function;
 public final class Retry<O> implements Callable<O> {
     private final Callable<O> callable;
     private final int tries;
-    private final boolean isInfinite;
     private final Function<Integer, Long> intervalFunction;
     private final BiPredicate<Integer, Exception> continuePredicate;
-    private final Function<List<Exception>, Exception> exceptionsReducer;
+    private final Reducer<Exception> exceptionsReducer;
 
     private Retry(Callable<O> callable, int tries, Function<Integer, Long> intervalFunction,
-                  BiPredicate<Integer, Exception> continuePredicate,
-                  Function<List<Exception>, Exception> exceptionsReducer) {
+                  BiPredicate<Integer, Exception> continuePredicate, Reducer<Exception> exceptionsReducer) {
         this.callable = callable;
         this.tries = tries;
-        this.isInfinite = tries == Integer.MAX_VALUE;
         this.intervalFunction = intervalFunction;
         this.continuePredicate = continuePredicate;
         this.exceptionsReducer = exceptionsReducer;
@@ -42,14 +40,6 @@ public final class Retry<O> implements Callable<O> {
      */
     public static Builder of(int tries) {
         return new Builder(tries);
-    }
-
-    /**
-     * Constructs a builder of an indefinite retry.
-     * @return The builder.
-     */
-    public static Builder indefinitely() {
-        return of(Integer.MAX_VALUE);
     }
 
     /**
@@ -70,7 +60,7 @@ public final class Retry<O> implements Callable<O> {
 
     @Override
     public O call() throws Exception {
-        List<Exception> exceptions = new ArrayList<>(isInfinite ? 1 : tries);
+        List<Exception> exceptions = new ArrayList<>(tries);
         for (int retry = 0; retry < tries; retry++) {
             if (retry > 0)
                 Thread.sleep(intervalFunction.apply(retry));
@@ -79,8 +69,7 @@ public final class Retry<O> implements Callable<O> {
             } catch (Exception e) {
                 if (!continuePredicate.test(retry, e))
                     throw e;
-                if (!isInfinite || exceptions.isEmpty())
-                    exceptions.add(e);
+                exceptions.add(e);
             }
         }
         throw exceptionsReducer.apply(exceptions);
@@ -93,7 +82,7 @@ public final class Retry<O> implements Callable<O> {
         private final int tries;
         private Function<Integer, Long> intervalFunction;
         private BiPredicate<Integer, Exception> continuePredicate;
-        private Function<List<Exception>, Exception> exceptionsReducer;
+        private Reducer<Exception> exceptionsReducer;
 
         private Builder(int tries) {
             this.tries = Sugar.requireRange(tries, 1, null);
@@ -147,11 +136,11 @@ public final class Retry<O> implements Callable<O> {
 
         /**
          * Sets the function choosing or constructing the exception based on the list of the exceptions received on all
-         * retries. The default logic is throwing the last exception (<code>Sugar::last</code>).
-         * @param exceptionsReducer A function getting the retries exceptions list, returning the exception to throw.
+         * retries. The default logic is throwing the last exception.
+         * @param exceptionsReducer A reducer of the retries exceptions list, returning the exception to throw.
          * @return This builder.
          */
-        public Builder reduce(Function<List<Exception>, Exception> exceptionsReducer) {
+        public Builder reduce(Reducer<Exception> exceptionsReducer) {
             this.exceptionsReducer = exceptionsReducer;
             return this;
         }

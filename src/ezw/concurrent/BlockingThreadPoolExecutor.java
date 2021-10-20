@@ -18,11 +18,20 @@ public class BlockingThreadPoolExecutor extends ThreadPoolExecutor {
     private final Limiter limiter;
 
     /**
-     * Constructs a new blocking thread pool executor with a maximum pool size.
+     * Constructs a new blocking thread pool executor.
      * @param maximumPoolSize The maximum number of threads to allow in the pool.
      */
     public BlockingThreadPoolExecutor(int maximumPoolSize) {
-        super(maximumPoolSize, maximumPoolSize, 1, TimeUnit.MINUTES, new LinkedBlockingQueue<>());
+        this(maximumPoolSize, Executors.defaultThreadFactory());
+    }
+
+    /**
+     * Constructs a new blocking thread pool executor.
+     * @param maximumPoolSize The maximum number of threads to allow in the pool.
+     * @param threadFactory The factory to use when creating a new thread.
+     */
+    public BlockingThreadPoolExecutor(int maximumPoolSize, ThreadFactory threadFactory) {
+        super(maximumPoolSize, maximumPoolSize, 1, TimeUnit.MINUTES, new LinkedBlockingQueue<>(), threadFactory);
         allowCoreThreadTimeOut(true);
         limiter = new Limiter(maximumPoolSize);
     }
