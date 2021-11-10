@@ -4,6 +4,7 @@ import ezw.Sugar;
 
 import java.util.Objects;
 import java.util.concurrent.Callable;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -49,6 +50,15 @@ public class Lazy<T> implements Supplier<T> {
             }
         }
         return value;
+    }
+
+    /**
+     * Performs an operation on the value if and only if calculated.
+     * @param consumer The value consumer.
+     */
+    public void maybe(Consumer<T> consumer) {
+        if (isCalculated)
+            Objects.requireNonNull(consumer, "Consumer is null.").accept(value);
     }
 
     /**
