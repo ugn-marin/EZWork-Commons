@@ -76,6 +76,21 @@ public abstract class Concurrent {
     }
 
     /**
+     * Shuts the cached pool down if used, and awaits termination indefinitely.
+     * @throws InterruptedRuntimeException If interrupted.
+     */
+    public static void join() {
+        cachedPool.maybe(pool -> Interruptible.run(() -> Concurrent.join(pool)));
+    }
+
+    /**
+     * Shuts the cached pool down if used.
+     */
+    public static void shutdown() {
+        cachedPool.maybe(ExecutorService::shutdown);
+    }
+
+    /**
      * Constructs a thread factory naming the threads as name and thread number: <code>"name #"</code>
      * @param name The name.
      * @return The thread factory.
