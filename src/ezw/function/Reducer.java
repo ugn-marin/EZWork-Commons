@@ -10,16 +10,16 @@ import java.util.function.Supplier;
 
 /**
  * A function reducing a list of items to a single item.
- * @param <O> The items type.
+ * @param <T> The items type.
  */
-public interface Reducer<O> extends Function<List<O>, O> {
+public interface Reducer<T> extends Function<List<T>, T> {
 
     /**
      * Returns a decorator applying reducer on non-empty lists, or returning the supplier result on null or empty lists.
      * @param onNullOrEmpty The supplier to run on null or empty lists.
      * @return The reducer decorator.
      */
-    default Reducer<O> orElse(Supplier<O> onNullOrEmpty) {
+    default Reducer<T> orElse(Supplier<T> onNullOrEmpty) {
         return orElse(this, onNullOrEmpty);
     }
 
@@ -27,7 +27,7 @@ public interface Reducer<O> extends Function<List<O>, O> {
      * Returns a decorator applying reducer on non-empty lists, or returning null on null or empty lists.
      * @return The reducer decorator.
      */
-    default Reducer<O> orElseNull() {
+    default Reducer<T> orElseNull() {
         return orElseNull(this);
     }
 
@@ -35,10 +35,10 @@ public interface Reducer<O> extends Function<List<O>, O> {
      * Returns a decorator applying reducer on non-empty lists, or returning the supplier result on null or empty lists.
      * @param reducer The reducer.
      * @param onNullOrEmpty The supplier to run on null or empty lists.
-     * @param <O> The items type.
+     * @param <T> The items type.
      * @return The reducer decorator.
      */
-    static <O> Reducer<O> orElse(Reducer<O> reducer, Supplier<O> onNullOrEmpty) {
+    static <T> Reducer<T> orElse(Reducer<T> reducer, Supplier<T> onNullOrEmpty) {
         return items -> items == null || items.isEmpty() ? onNullOrEmpty.get() : reducer.apply(items);
     }
 
@@ -48,10 +48,10 @@ public interface Reducer<O> extends Function<List<O>, O> {
      * orElse(reducer, () -> null);
      * </pre>
      * @param reducer The reducer.
-     * @param <O> The items type.
+     * @param <T> The items type.
      * @return The reducer decorator.
      */
-    static <O> Reducer<O> orElseNull(Reducer<O> reducer) {
+    static <T> Reducer<T> orElseNull(Reducer<T> reducer) {
         return orElse(reducer, () -> null);
     }
 
@@ -60,10 +60,10 @@ public interface Reducer<O> extends Function<List<O>, O> {
      * <pre>
      * orElseNull(Sugar::first);
      * </pre>
-     * @param <O> The items type.
+     * @param <T> The items type.
      * @return The reducer.
      */
-    static <O> Reducer<O> first() {
+    static <T> Reducer<T> first() {
         return orElseNull(Sugar::first);
     }
 
@@ -72,10 +72,10 @@ public interface Reducer<O> extends Function<List<O>, O> {
      * <pre>
      * orElseNull(Sugar::last);
      * </pre>
-     * @param <O> The items type.
+     * @param <T> The items type.
      * @return The reducer.
      */
-    static <O> Reducer<O> last() {
+    static <T> Reducer<T> last() {
         return orElseNull(Sugar::last);
     }
 
@@ -84,13 +84,13 @@ public interface Reducer<O> extends Function<List<O>, O> {
      * returned as is, else applied on by the operator with the second item, and the result is applied on by the
      * operator with subsequent items. In other words, with operator applying on items as (#, #): (((0, 1), 2), 3)...
      * @param operator The operator.
-     * @param <O> The items type.
+     * @param <T> The items type.
      * @return The reducer.
      */
-    static <O> Reducer<O> from(BinaryOperator<O> operator) {
+    static <T> Reducer<T> from(BinaryOperator<T> operator) {
         return items -> {
             var iterator = Sugar.requireNonEmpty(items).iterator();
-            O result = iterator.next();
+            T result = iterator.next();
             while (iterator.hasNext()) {
                 result = operator.apply(result, iterator.next());
             }
@@ -101,38 +101,38 @@ public interface Reducer<O> extends Function<List<O>, O> {
     /**
      * Returns a reducer returning the maximum value in non-empty lists.
      * @param comparator The comparator.
-     * @param <O> The items type.
+     * @param <T> The items type.
      * @return The reducer.
      */
-    static <O> Reducer<O> max(Comparator<O> comparator) {
+    static <T> Reducer<T> max(Comparator<T> comparator) {
         return from(Sugar.greater(comparator));
     }
 
     /**
      * Returns a reducer returning the maximum value in non-empty lists.
-     * @param <O> The items type.
+     * @param <T> The items type.
      * @return The reducer.
      */
-    static <O extends Comparable<O>> Reducer<O> max() {
+    static <T extends Comparable<T>> Reducer<T> max() {
         return max(Comparable::compareTo);
     }
 
     /**
      * Returns a reducer returning the minimum value in non-empty lists.
      * @param comparator The comparator.
-     * @param <O> The items type.
+     * @param <T> The items type.
      * @return The reducer.
      */
-    static <O> Reducer<O> min(Comparator<O> comparator) {
+    static <T> Reducer<T> min(Comparator<T> comparator) {
         return from(Sugar.smaller(comparator));
     }
 
     /**
      * Returns a reducer returning the maximum value in non-empty lists.
-     * @param <O> The items type.
+     * @param <T> The items type.
      * @return The reducer.
      */
-    static <O extends Comparable<O>> Reducer<O> min() {
+    static <T extends Comparable<T>> Reducer<T> min() {
         return min(Comparable::compareTo);
     }
 }
