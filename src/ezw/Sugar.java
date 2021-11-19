@@ -6,9 +6,7 @@ import ezw.function.UnsafeRunnable;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.*;
 import java.util.concurrent.Callable;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
+import java.util.function.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -396,5 +394,47 @@ public abstract class Sugar {
             }
         }
         return text;
+    }
+
+    /**
+     * Returns a binary operator returning the greater of two objects.
+     * @param comparator The comparator.
+     * @param <T> The operands type.
+     * @return The operator.
+     */
+    public static <T> BinaryOperator<T> greater(Comparator<T> comparator) {
+        return conditional(comparator, i -> i > 0);
+    }
+
+    /**
+     * Returns a binary operator returning the greater of two objects.
+     * @param <T> The operands type.
+     * @return The operator.
+     */
+    public static <T extends Comparable<T>> BinaryOperator<T> greater() {
+        return greater(Comparable::compareTo);
+    }
+
+    /**
+     * Returns a binary operator returning the smaller of two objects.
+     * @param comparator The comparator.
+     * @param <T> The operands type.
+     * @return The operator.
+     */
+    public static <T> BinaryOperator<T> smaller(Comparator<T> comparator) {
+        return conditional(comparator, i -> i < 0);
+    }
+
+    /**
+     * Returns a binary operator returning the smaller of two objects.
+     * @param <T> The operands type.
+     * @return The operator.
+     */
+    public static <T extends Comparable<T>> BinaryOperator<T> smaller() {
+        return smaller(Comparable::compareTo);
+    }
+
+    private static <T> BinaryOperator<T> conditional(Comparator<T> comparator, IntPredicate direction) {
+        return (o1, o2) -> direction.test(comparator.compare(o1, o2)) ? o1 : o2;
     }
 }
