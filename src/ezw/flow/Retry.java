@@ -125,6 +125,7 @@ public final class Retry<O> implements Callable<O> {
          * Sets the predicate deciding whether to continue on an exception. Can be based on a blacklist or a whitelist
          * of exception types (with the help of the <code>blacklist</code> and <code>whitelist</code> methods
          * accordingly), or any other logic. The default logic is a blacklist of common interruption exception types.
+         * When interrupted while in an interval sleep, the interruption will be thrown regardless of this logic.
          * @param continuePredicate A bi-predicate getting the retry number and the exception, returning true if retries
          *                          should continue, else false.
          * @return This builder.
