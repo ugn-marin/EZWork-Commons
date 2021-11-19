@@ -40,6 +40,7 @@ public abstract class Concurrent {
 
     /**
      * Submits several unsafe runnable tasks into the cached pool, waits for all tasks completion.
+     * @param exceptionsReducer A reducer of the tasks exceptions list, returning the exception to throw.
      * @param tasks The tasks.
      */
     public static void run(Reducer<Exception> exceptionsReducer, Runnable... tasks) throws Exception {
@@ -49,6 +50,7 @@ public abstract class Concurrent {
 
     /**
      * Calls <code>get</code> for each future. In other words, waits if necessary for all futures' tasks completion.
+     * @param exceptionsReducer A reducer of the futures exceptions list, returning the exception to throw.
      * @param futures The futures.
      */
     public static void getAll(Reducer<Exception> exceptionsReducer, Future<?>... futures) throws Exception {
@@ -73,21 +75,6 @@ public abstract class Concurrent {
         executorService.shutdown();
         if (!executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS))
             throw new InterruptedException();
-    }
-
-    /**
-     * Shuts the cached pool down if used, and awaits termination indefinitely.
-     * @throws InterruptedRuntimeException If interrupted.
-     */
-    public static void join() {
-        cachedPool.maybe(pool -> Interruptible.run(() -> Concurrent.join(pool)));
-    }
-
-    /**
-     * Shuts the cached pool down if used.
-     */
-    public static void shutdown() {
-        cachedPool.maybe(ExecutorService::shutdown);
     }
 
     /**

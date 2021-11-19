@@ -196,15 +196,15 @@ public abstract class Sugar {
     }
 
     /**
-     * Validates that the iterable and every one of its members is not null.
-     * @param objects The iterable.
-     * @param <I> The members type.
-     * @return The iterable.
-     * @throws NullPointerException If the iterable or any of its members is null.
+     * Validates that the list and every one of its members is not null.
+     * @param objects The list.
+     * @param <T> The members type.
+     * @return The list.
+     * @throws NullPointerException If the list or any of its members is null.
      */
-    public static <I extends Iterable<?>> I requireNoneNull(I objects) {
-        Objects.requireNonNull(objects, "Iterable is null.").forEach(
-                o -> Objects.requireNonNull(o, "Iterable contains a null reference."));
+    public static <T> List<T> requireNoneNull(List<T> objects) {
+        Objects.requireNonNull(objects, "List is null.").forEach(
+                o -> Objects.requireNonNull(o, "List contains a null reference."));
         return objects;
     }
 

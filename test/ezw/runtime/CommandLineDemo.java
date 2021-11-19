@@ -10,7 +10,7 @@ public class CommandLineDemo {
         var hostname = hostnameCommand.call();
         System.out.printf("%s, %s%n", Sugar.first(hostname.getOutput()), hostname);
 
-        System.out.println(new Ping("google.com").attempt());
+        System.out.println(new Ping("google.com").call());
 
         System.out.println(new JVM(Ping.class, "speedtest.net").attempt());
         System.out.println(new JVM(Ping.class, "unknownhost").attempt());
