@@ -105,7 +105,7 @@ public interface Reducer<T> extends Function<List<T>, T> {
      * @return The reducer.
      */
     static <T> Reducer<T> max(Comparator<T> comparator) {
-        return from(Sugar.greater(comparator));
+        return from(BinaryOperator.maxBy(comparator));
     }
 
     /**
@@ -124,7 +124,7 @@ public interface Reducer<T> extends Function<List<T>, T> {
      * @return The reducer.
      */
     static <T> Reducer<T> min(Comparator<T> comparator) {
-        return from(Sugar.smaller(comparator));
+        return from(BinaryOperator.minBy(comparator));
     }
 
     /**
