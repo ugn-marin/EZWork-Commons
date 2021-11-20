@@ -1,5 +1,7 @@
 package ezw.concurrent;
 
+import ezw.Sugar;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -17,7 +19,7 @@ public class Limiter {
      * @param limit The limit.
      */
     public Limiter(int limit) {
-        this.limit = limit;
+        this.limit = Sugar.requireRange(limit, 1, null);
     }
 
     /**
