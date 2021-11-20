@@ -7,12 +7,22 @@ import java.util.List;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 /**
  * A function reducing a list of items to a single item.
  * @param <T> The items type.
  */
 public interface Reducer<T> extends Function<List<T>, T> {
+
+    /**
+     * Returns a decorator applying reducer, then the operator on the result.
+     * @param after The operator to apply on the reducer result.
+     * @return The reducer decorator.
+     */
+    default Reducer<T> andThen(UnaryOperator<T> after) {
+        return items -> after.apply(apply(items));
+    }
 
     /**
      * Returns a decorator applying reducer on non-empty lists, or returning the supplier result on null or empty lists.
