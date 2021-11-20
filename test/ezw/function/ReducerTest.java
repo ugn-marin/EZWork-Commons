@@ -23,6 +23,12 @@ public class ReducerTest {
     }
 
     @Test
+    void andThen() {
+        Assertions.assertEquals("3", Reducer.<Integer>max().andThen(Object::toString).apply(List.of(1, 2, 3)));
+        Assertions.assertEquals(10, Reducer.<Integer>min().andThen(i -> i * 10).apply(List.of(1, 2, 3)));
+    }
+
+    @Test
     void orElse() {
         Assertions.assertEquals(8, Reducer.<Integer>max().orElse(() -> 8).apply(List.of()));
         Assertions.assertEquals(8, Reducer.<Integer>min().orElse(() -> 8).apply(null));
