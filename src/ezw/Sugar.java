@@ -6,7 +6,9 @@ import ezw.function.UnsafeRunnable;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.*;
 import java.util.concurrent.Callable;
-import java.util.function.*;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -230,14 +232,6 @@ public abstract class Sugar {
      */
     public static <T> List<T> requireFull(List<T> objects) {
         return requireNonEmpty(requireNoneNull(objects));
-    }
-
-    /**
-     * Returns stream of all non-null objects.
-     */
-    @SafeVarargs
-    public static <T> Stream<T> nonNull(T... objects) {
-        return Arrays.stream(Objects.requireNonNull(objects, "Array is null.")).filter(Objects::nonNull);
     }
 
     /**
