@@ -614,7 +614,7 @@ public class Matrix<T> {
     public static final class Coordinates extends Couple<Integer> {
 
         private Coordinates(int x, int y) {
-            super(Integer.class, x, y);
+            super(x, y);
         }
 
         public static Coordinates of(int x, int y) {
@@ -636,7 +636,7 @@ public class Matrix<T> {
     public static final class Block extends Couple<Coordinates> {
 
         private Block(Coordinates from, Coordinates to) {
-            super(Coordinates.class, from, to);
+            super(from, to);
         }
 
         public static Block of(int fromX, int fromY, int toX, int toY) {
