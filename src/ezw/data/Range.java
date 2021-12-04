@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 public final class Range extends Couple<Integer> {
 
     private Range(int from, int to) {
-        super(Integer.class, from, to);
+        super(from, to);
     }
 
     /**

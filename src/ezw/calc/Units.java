@@ -142,13 +142,6 @@ public abstract class Units {
         public static long convertNanoToMillis(long nano) {
             return nano / 1000000L;
         }
-
-        /**
-         * Converts nanoseconds to seconds.
-         */
-        public static double convertNanoToSeconds(long nano) {
-            return TimeUnit.milliseconds.convert(convertNanoToMillis(nano), TimeUnit.seconds);
-        }
     }
 
     /**
@@ -157,19 +150,17 @@ public abstract class Units {
     public static abstract class Size {
 
         enum SizeUnit implements Unit {
-            bytes(1, 1024),
-            KB(bytes.getLimit(), 1024),
-            MB(KB.getLimit(), 1024),
-            GB(MB.getLimit(), 1024),
-            TB(GB.getLimit(), 1024),
-            PB(TB.getLimit(), 1024);
+            bytes(1),
+            KB(bytes.getLimit()),
+            MB(KB.getLimit()),
+            GB(MB.getLimit()),
+            TB(GB.getLimit()),
+            PB(TB.getLimit());
 
             private final long value;
-            private final long limit;
 
-            SizeUnit(long value, long limitFactor) {
+            SizeUnit(long value) {
                 this.value = value;
-                limit = value * limitFactor;
             }
 
             @Override
@@ -179,7 +170,7 @@ public abstract class Units {
 
             @Override
             public long getLimit() {
-                return limit;
+                return value * 1024;
             }
         }
 
