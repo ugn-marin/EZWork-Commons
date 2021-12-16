@@ -85,6 +85,19 @@ public abstract class Sugar {
     }
 
     /**
+     * Produces and accepts optional values into the consumer until empty.
+     * @param callable The callable producing the optional values.
+     * @param consumer The values consumer.
+     * @param <T> The values type.
+     * @throws Exception Any exception thrown by the implementations.
+     */
+    public static <T> void acceptWhilePresent(Callable<Optional<T>> callable, UnsafeConsumer<T> consumer)
+            throws Exception {
+        Objects.requireNonNull(consumer, "Consumer is null.");
+        acceptWhile(callable, optional -> consumer.accept(optional.orElseThrow()), Optional::isPresent);
+    }
+
+    /**
      * Wraps a callable implementation in a Supplier throwing sneaky. To define an <i>on exception</i> value calculation
      * use the <code>orElse</code> method.
      */
@@ -286,9 +299,7 @@ public abstract class Sugar {
     public static <T> List<T> fill(int size, Supplier<T> supplier) {
         Objects.requireNonNull(supplier, "Supplier is null.");
         List<T> list = new ArrayList<>(size);
-        for (int i = 0; i < size; i++) {
-            list.add(supplier.get());
-        }
+        repeat(size, () -> list.add(supplier.get()));
         return list;
     }
 
