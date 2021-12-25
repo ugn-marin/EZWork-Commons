@@ -130,6 +130,27 @@ public abstract class Sugar {
     }
 
     /**
+     * Runs the provided unsafe runnable steps with guaranteed execution: For each step, subsequent steps are executed
+     * in the <code>finally</code> block. Throwables are accepted by the throwable consumer.
+     * @param steps The steps.
+     * @param throwableConsumer The consumer of the steps' throwables.
+     */
+    public static void runSteps(Iterator<UnsafeRunnable> steps, Consumer<Throwable> throwableConsumer) {
+        Objects.requireNonNull(steps, "Steps iterator is null.");
+        Objects.requireNonNull(throwableConsumer, "Throwable consumer is null.");
+        if (!steps.hasNext()) {
+            return;
+        }
+        try {
+            steps.next().run();
+        } catch (Throwable t) {
+            throwableConsumer.accept(t);
+        } finally {
+            runSteps(steps, throwableConsumer);
+        }
+    }
+
+    /**
      * Throws the throwable as an exception, or as Error if is an Error.
      * @param throwable A throwable.
      * @throws Exception The throwable if not null, thrown as is if instance of Exception or Error, or wrapped in a new
