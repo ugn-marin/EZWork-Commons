@@ -1,6 +1,7 @@
 package ezw.concurrent;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Supplier;
 
 /**
@@ -82,7 +83,7 @@ public abstract class Interruptible {
      * Runs the object's <code>wait</code> method, wrapping the <code>InterruptedException</code> in an
      * <code>InterruptedRuntimeException</code>. Equivalent to:
      * <pre>
-     * Interruptible.run(object::wait);
+     * Interruptible.run(object::wait)
      * </pre>
      * @param object The object.
      * @throws InterruptedRuntimeException If interrupted.
@@ -92,29 +93,42 @@ public abstract class Interruptible {
     }
 
     /**
-     * Runs the limiter's <code>begin</code> method, wrapping the <code>InterruptedException</code> in an
-     * <code>InterruptedRuntimeException</code>. Equivalent to:
-     * <pre>
-     * Interruptible.run(limiter::begin);
-     * </pre>
-     * @param limiter The limiter.
-     * @throws InterruptedRuntimeException If interrupted.
-     */
-    public static void begin(Limiter limiter) throws InterruptedRuntimeException {
-        run(limiter::begin);
-    }
-
-    /**
      * Runs the <code>sleep</code> method, wrapping the <code>InterruptedException</code> in an
      * <code>InterruptedRuntimeException</code>. Equivalent to:
      * <pre>
-     * Interruptible.run(() -> Thread.sleep(millis));
+     * Interruptible.run(() -> Thread.sleep(millis))
      * </pre>
      * @param millis The length of time to sleep in milliseconds.
      * @throws InterruptedRuntimeException If interrupted.
      */
     public static void sleep(long millis) throws InterruptedRuntimeException {
         run(() -> Thread.sleep(millis));
+    }
+
+    /**
+     * Runs the <code>join</code> method with the executor service, wrapping the <code>InterruptedException</code> in an
+     * <code>InterruptedRuntimeException</code>. Equivalent to:
+     * <pre>
+     * Interruptible.run(() -> Concurrent.join(executorService))
+     * </pre>
+     * @param executorService The executor service.
+     * @throws InterruptedRuntimeException If interrupted.
+     */
+    public static void join(ExecutorService executorService) throws InterruptedRuntimeException {
+        run(() -> Concurrent.join(executorService));
+    }
+
+    /**
+     * Runs the limiter's <code>begin</code> method, wrapping the <code>InterruptedException</code> in an
+     * <code>InterruptedRuntimeException</code>. Equivalent to:
+     * <pre>
+     * Interruptible.run(limiter::begin)
+     * </pre>
+     * @param limiter The limiter.
+     * @throws InterruptedRuntimeException If interrupted.
+     */
+    public static void begin(Limiter limiter) throws InterruptedRuntimeException {
+        run(limiter::begin);
     }
 
     /**
@@ -131,7 +145,7 @@ public abstract class Interruptible {
      * Validates the interrupted status of the thread, and throws InterruptedRuntimeException if set. The interrupted
      * status of the thread is unaffected by this method. Equivalent to:
      * <pre>
-     * Interruptible.run(Interruptible::validateInterrupted);
+     * Interruptible.run(Interruptible::validateInterrupted)
      * </pre>
      * @throws InterruptedRuntimeException If this thread is marked as interrupted.
      */

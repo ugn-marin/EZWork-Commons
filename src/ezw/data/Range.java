@@ -69,7 +69,7 @@ public final class Range extends Couple<Integer> {
      * Performs an action for each value in this range, from <code>from</code> (inclusive) to <code>to</code>
      * (exclusive). If the range is empty, does nothing. Equivalent to:
      * <pre>
-     * stream().forEach(action);
+     * stream().forEach(action)
      * </pre>
      */
     public void forEach(Consumer<Integer> action) {

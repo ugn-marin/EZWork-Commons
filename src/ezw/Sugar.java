@@ -6,6 +6,7 @@ import ezw.function.UnsafeRunnable;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -115,7 +116,7 @@ public abstract class Sugar {
     /**
      * Runs an unsafe runnable as a runnable. Equivalent to:
      * <pre>
-     * runnable.toRunnable().run();
+     * runnable.toRunnable().run()
      * </pre>
      */
     public static void sneaky(UnsafeRunnable runnable) {
@@ -127,6 +128,27 @@ public abstract class Sugar {
      */
     public static RuntimeException sneaky(Exception e) {
         return e instanceof RuntimeException ? (RuntimeException) e : new UndeclaredThrowableException(e);
+    }
+
+    /**
+     * Runs the provided unsafe runnable steps with guaranteed execution: For each step, subsequent steps are executed
+     * in the <code>finally</code> block. Throwables are accepted by the throwable consumer.
+     * @param steps The steps.
+     * @param throwableConsumer The consumer of the steps' throwables.
+     */
+    public static void runSteps(Iterator<UnsafeRunnable> steps, Consumer<Throwable> throwableConsumer) {
+        Objects.requireNonNull(steps, "Steps iterator is null.");
+        Objects.requireNonNull(throwableConsumer, "Throwable consumer is null.");
+        if (!steps.hasNext()) {
+            return;
+        }
+        try {
+            steps.next().run();
+        } catch (Throwable t) {
+            throwableConsumer.accept(t);
+        } finally {
+            runSteps(steps, throwableConsumer);
+        }
     }
 
     /**
@@ -224,7 +246,7 @@ public abstract class Sugar {
     /**
      * Validates that the array is not null or empty, and none of its members is null. Equivalent to:
      * <pre>
-     * requireNonEmpty(requireNoneNull(objects));
+     * requireNonEmpty(requireNoneNull(objects))
      * </pre>
      * @param objects The array.
      * @param <T> The members type.
@@ -237,7 +259,7 @@ public abstract class Sugar {
     /**
      * Validates that the list is not null or empty, and none of its members is null. Equivalent to:
      * <pre>
-     * requireNonEmpty(requireNoneNull(objects));
+     * requireNonEmpty(requireNoneNull(objects))
      * </pre>
      * @param objects The list.
      * @param <T> The members type.

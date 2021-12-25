@@ -63,7 +63,7 @@ public abstract class Concurrent {
             }
         }
         if (exceptions.isCalculated())
-            throw exceptionsReducer.apply(exceptions.get());
+            Sugar.throwIfNonNull(exceptionsReducer.apply(exceptions.get()));
     }
 
     /**

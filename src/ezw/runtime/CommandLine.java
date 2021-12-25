@@ -158,7 +158,7 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
     /**
      * Turns off printing of the output lines if collected. Equivalent to:
      * <pre>
-     * setOutputStreams(null, null);
+     * setOutputStreams(null, null)
      * </pre>
      */
     public void setNoPrints() {
