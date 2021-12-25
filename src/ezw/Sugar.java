@@ -6,6 +6,7 @@ import ezw.function.UnsafeRunnable;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -115,7 +116,7 @@ public abstract class Sugar {
     /**
      * Runs an unsafe runnable as a runnable. Equivalent to:
      * <pre>
-     * runnable.toRunnable().run();
+     * runnable.toRunnable().run()
      * </pre>
      */
     public static void sneaky(UnsafeRunnable runnable) {
@@ -245,7 +246,7 @@ public abstract class Sugar {
     /**
      * Validates that the array is not null or empty, and none of its members is null. Equivalent to:
      * <pre>
-     * requireNonEmpty(requireNoneNull(objects));
+     * requireNonEmpty(requireNoneNull(objects))
      * </pre>
      * @param objects The array.
      * @param <T> The members type.
@@ -258,7 +259,7 @@ public abstract class Sugar {
     /**
      * Validates that the list is not null or empty, and none of its members is null. Equivalent to:
      * <pre>
-     * requireNonEmpty(requireNoneNull(objects));
+     * requireNonEmpty(requireNoneNull(objects))
      * </pre>
      * @param objects The list.
      * @param <T> The members type.

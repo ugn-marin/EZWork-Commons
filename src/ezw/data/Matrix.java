@@ -704,7 +704,7 @@ public class Matrix<T> {
          * Performs an action for each cell in the block, from <code>from</code> (inclusive) to <code>to</code>
          * (exclusive). If either X or Y range is empty, does nothing. Equivalent to:
          * <pre>
-         * stream().forEach(action);
+         * stream().forEach(action)
          * </pre>
          */
         public void forEach(Consumer<Coordinates> action) {

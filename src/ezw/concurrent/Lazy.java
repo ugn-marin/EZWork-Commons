@@ -22,7 +22,7 @@ public class Lazy<T> implements Supplier<T> {
      * @param valueSupplier The value supplier. Will be calculated on the first attempt to get the value.
      */
     public Lazy(Supplier<T> valueSupplier) {
-        this.valueSupplier = Objects.requireNonNull(valueSupplier, "Value supplier cannot be null.");
+        this.valueSupplier = Objects.requireNonNull(valueSupplier, "Value supplier is null.");
     }
 
     /**

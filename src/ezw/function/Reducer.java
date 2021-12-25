@@ -55,7 +55,7 @@ public interface Reducer<T> extends Function<List<T>, T> {
     /**
      * Returns a decorator applying reducer on non-empty lists, or returning null on null or empty lists. Equivalent to:
      * <pre>
-     * orElse(reducer, () -> null);
+     * orElse(reducer, () -> null)
      * </pre>
      * @param reducer The reducer.
      * @param <T> The items type.
@@ -63,30 +63,6 @@ public interface Reducer<T> extends Function<List<T>, T> {
      */
     static <T> Reducer<T> orElseNull(Reducer<T> reducer) {
         return orElse(reducer, () -> null);
-    }
-
-    /**
-     * Returns a reducer returning the first item of non-empty lists, or else null. Equivalent to:
-     * <pre>
-     * orElseNull(Sugar::first);
-     * </pre>
-     * @param <T> The items type.
-     * @return The reducer.
-     */
-    static <T> Reducer<T> first() {
-        return orElseNull(Sugar::first);
-    }
-
-    /**
-     * Returns a reducer returning the last item of non-empty lists, or else null. Equivalent to:
-     * <pre>
-     * orElseNull(Sugar::last);
-     * </pre>
-     * @param <T> The items type.
-     * @return The reducer.
-     */
-    static <T> Reducer<T> last() {
-        return orElseNull(Sugar::last);
     }
 
     /**
@@ -106,6 +82,30 @@ public interface Reducer<T> extends Function<List<T>, T> {
             }
             return result;
         };
+    }
+
+    /**
+     * Returns a reducer returning the first item of non-empty lists, or else null. Equivalent to:
+     * <pre>
+     * orElseNull(Sugar::first)
+     * </pre>
+     * @param <T> The items type.
+     * @return The reducer.
+     */
+    static <T> Reducer<T> first() {
+        return orElseNull(Sugar::first);
+    }
+
+    /**
+     * Returns a reducer returning the last item of non-empty lists, or else null. Equivalent to:
+     * <pre>
+     * orElseNull(Sugar::last)
+     * </pre>
+     * @param <T> The items type.
+     * @return The reducer.
+     */
+    static <T> Reducer<T> last() {
+        return orElseNull(Sugar::last);
     }
 
     /**

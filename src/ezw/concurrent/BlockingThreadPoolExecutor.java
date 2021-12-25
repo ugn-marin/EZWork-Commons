@@ -11,8 +11,7 @@ import java.util.concurrent.*;
  * 1 still guarantees the order of execution, whereas having a <code>CallerRunsPolicy</code> rejected execution handler
  * does not.<br>
  * In addition, unlike a fixed thread pool, the threads in this pool are terminated if idle for over a minute.<br>
- * Note that task submissions into this pool might throw an <code>InterruptedRuntimeException</code>.<br>
- * Every task submitting is preceded by an interruption validation.
+ * Note that task submissions into this pool might throw an <code>InterruptedRuntimeException</code>.
  */
 public class BlockingThreadPoolExecutor extends ThreadPoolExecutor {
     private final Limiter limiter;
