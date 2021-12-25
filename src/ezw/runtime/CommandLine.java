@@ -4,6 +4,7 @@ import ezw.Sugar;
 import ezw.calc.Units;
 import ezw.concurrent.Concurrent;
 import ezw.concurrent.Interruptible;
+import ezw.function.Reducer;
 
 import java.io.*;
 import java.util.*;
@@ -212,7 +213,7 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
             long startNano = System.nanoTime();
             process = processBuilder.start();
             if (collectOutput)
-                Concurrent.run(Sugar::last, getOutputReader(false, result), getOutputReader(true, result));
+                Concurrent.run(Reducer.suppressor(), getOutputReader(false, result), getOutputReader(true, result));
             return result.returned(process.waitFor(), startNano);
         } finally {
             lock.unlock();

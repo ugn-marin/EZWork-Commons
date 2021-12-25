@@ -67,8 +67,10 @@ public final class Retry<O> implements Callable<O> {
             try {
                 return callable.call();
             } catch (Exception e) {
-                if (!continuePredicate.test(retry, e))
+                if (!continuePredicate.test(retry, e)) {
+                    exceptions.forEach(e::addSuppressed);
                     throw e;
+                }
                 exceptions.add(e);
             }
         }
@@ -125,7 +127,8 @@ public final class Retry<O> implements Callable<O> {
          * Sets the predicate deciding whether to continue on an exception. Can be based on a blacklist or a whitelist
          * of exception types (with the help of the <code>blacklist</code> and <code>whitelist</code> methods
          * accordingly), or any other logic. The default logic is a blacklist of common interruption exception types.
-         * When interrupted while in an interval sleep, the interruption will be thrown regardless of this logic.
+         * If any exceptions were caught thus far, they will be added as suppressed. When interrupted while in an
+         * interval sleep (outside the implementation), the interruption will be thrown regardless of this logic.
          * @param continuePredicate A bi-predicate getting the retry number and the exception, returning true if retries
          *                          should continue, else false.
          * @return This builder.
@@ -137,7 +140,7 @@ public final class Retry<O> implements Callable<O> {
 
         /**
          * Sets the function choosing or constructing the exception based on the list of the exceptions received on all
-         * retries. The default logic is throwing the last exception.
+         * retries. The default logic is <code>Reducer.suppressor()</code>.
          * @param exceptionsReducer A reducer of the retries exceptions list, returning the exception to throw.
          * @return This builder.
          */
@@ -156,7 +159,7 @@ public final class Retry<O> implements Callable<O> {
                     Objects.requireNonNullElse(intervalFunction, t -> 0L), Objects.requireNonNullElse(continuePredicate,
                     blacklist(InterruptedException.class, InterruptedRuntimeException.class,
                             ClosedByInterruptException.class, InterruptedIOException.class)),
-                    Objects.requireNonNullElse(exceptionsReducer, Sugar::last));
+                    Objects.requireNonNullElse(exceptionsReducer, Reducer.suppressor()));
         }
     }
 }

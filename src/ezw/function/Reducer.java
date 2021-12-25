@@ -145,4 +145,15 @@ public interface Reducer<T> extends Function<List<T>, T> {
     static <T extends Comparable<T>> Reducer<T> min() {
         return min(Comparable::compareTo);
     }
+
+    /**
+     * Returns an exceptions reducer, returning the last exception with the previous ones as suppressed, or else null.
+     */
+    static Reducer<Exception> suppressor() {
+        return orElseNull(exceptions -> {
+            Exception main = Sugar.removeLast(exceptions);
+            exceptions.forEach(main::addSuppressed);
+            return main;
+        });
+    }
 }
