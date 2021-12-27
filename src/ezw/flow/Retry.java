@@ -74,7 +74,8 @@ public final class Retry<O> implements Callable<O> {
                 exceptions.add(e);
             }
         }
-        throw exceptionsReducer.apply(exceptions);
+        Sugar.throwIfNonNull(exceptionsReducer.apply(exceptions));
+        return null;
     }
 
     /**
@@ -140,7 +141,8 @@ public final class Retry<O> implements Callable<O> {
 
         /**
          * Sets the function choosing or constructing the exception based on the list of the exceptions received on all
-         * retries. The default logic is <code>Reducer.suppressor()</code>.
+         * retries. The default logic is <code>Reducer.suppressor()</code>. If the reducer returns null, the retry will
+         * return null rather than throw an exception.
          * @param exceptionsReducer A reducer of the retries exceptions list, returning the exception to throw.
          * @return This builder.
          */
