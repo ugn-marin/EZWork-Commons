@@ -151,7 +151,7 @@ public interface Reducer<T> extends Function<List<T>, T> {
      */
     static Reducer<Exception> suppressor() {
         return orElseNull(exceptions -> {
-            Exception main = Sugar.removeLast(exceptions);
+            Exception main = Sugar.removeLast(Sugar.requireFull(exceptions));
             exceptions.forEach(main::addSuppressed);
             return main;
         });
