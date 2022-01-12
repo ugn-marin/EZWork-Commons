@@ -90,20 +90,17 @@ public abstract class Concurrent {
 
     private static class NamedThreadFactory implements ThreadFactory {
         private final String name;
-        private final ThreadGroup group;
         private final AtomicInteger threadNumber = new AtomicInteger();
 
         NamedThreadFactory(String name) {
             this.name = Objects.requireNonNull(name, "Name is null.");
-            var sm = System.getSecurityManager();
-            group = sm != null ? sm.getThreadGroup() : Thread.currentThread().getThreadGroup();
         }
 
         @Override
         public Thread newThread(Runnable task) {
             int number = threadNumber.incrementAndGet();
             String threadName = number > 1 ? name + " " + number : name;
-            var thread = new Thread(group, task, threadName, 0);
+            var thread = new Thread(task, threadName);
             if (thread.isDaemon())
                 thread.setDaemon(false);
             if (thread.getPriority() != Thread.NORM_PRIORITY)

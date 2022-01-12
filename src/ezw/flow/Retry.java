@@ -35,7 +35,7 @@ public final class Retry<O> implements Callable<O> {
 
     /**
      * Constructs a builder of a retry.
-     * @param tries The number of tries before throwing the exception.
+     * @param tries The number of tries before throwing the exception. Allowing values between 1 and 1000.
      * @return The builder.
      */
     public static Builder of(int tries) {
@@ -88,7 +88,7 @@ public final class Retry<O> implements Callable<O> {
         private Reducer<Exception> exceptionsReducer;
 
         private Builder(int tries) {
-            this.tries = Sugar.requireRange(tries, 1, null);
+            this.tries = Sugar.requireRange(tries, 1, 1000);
         }
 
         /**
