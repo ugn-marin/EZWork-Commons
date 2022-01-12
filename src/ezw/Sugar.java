@@ -67,6 +67,18 @@ public abstract class Sugar {
     }
 
     /**
+     * Repeats a runnable call indefinitely (or until throws a runtime exception or error).
+     * @param runnable The runnable.
+     */
+    @SuppressWarnings("InfiniteLoopStatement")
+    public static void repeat(Runnable runnable) {
+        Objects.requireNonNull(runnable, "Runnable is null.");
+        while (true) {
+            runnable.run();
+        }
+    }
+
+    /**
      * Produces and accepts values into the consumer as long as they pass the predicate.
      * @param callable The callable producing the values.
      * @param consumer The values consumer.
@@ -357,6 +369,17 @@ public abstract class Sugar {
      */
     public static boolean instanceOfAny(Object object, Class<?>... types) {
         return object != null && Arrays.stream(types).anyMatch(t -> t.isAssignableFrom(object.getClass()));
+    }
+
+    /**
+     * Returns a union stream of elements from the streams passed.
+     * @param streams An array of streams.
+     * @param <T> The type of the streams' elements.
+     * @return A union stream of elements from the streams passed.
+     */
+    @SafeVarargs
+    public static <T> Stream<T> union(Stream<T>... streams) {
+        return Arrays.stream(requireFull(streams)).flatMap(Function.identity());
     }
 
     /**
