@@ -139,7 +139,7 @@ public abstract class Sugar {
      * Returns the exception as is if runtime exception, else as undeclared.
      */
     public static RuntimeException sneaky(Exception e) {
-        return e instanceof RuntimeException ? (RuntimeException) e : new UndeclaredThrowableException(e);
+        return e instanceof RuntimeException re ? re : new UndeclaredThrowableException(e);
     }
 
     /**
@@ -173,12 +173,12 @@ public abstract class Sugar {
     public static void throwIfNonNull(Throwable throwable) throws Exception {
         if (throwable == null)
             return;
-        if (throwable instanceof Error)
-            throw (Error) throwable;
+        if (throwable instanceof Error error)
+            throw error;
         if (throwable instanceof UndeclaredThrowableException)
             throwIfNonNull(throwable.getCause());
-        if (throwable instanceof Exception)
-            throw (Exception) throwable;
+        if (throwable instanceof Exception e)
+            throw e;
         throw new UndeclaredThrowableException(throwable);
     }
 
@@ -390,12 +390,12 @@ public abstract class Sugar {
      */
     public static Object[] flat(Object... objects) {
         return Arrays.stream(Objects.requireNonNull(objects, "Array is null.")).flatMap(o -> {
-            if (o instanceof Object[])
-                return Stream.of((Object[]) o);
-            else if (o instanceof Iterable)
-                return StreamSupport.stream(((Iterable<?>) o).spliterator(), false);
-            else if (o instanceof Stream)
-                return (Stream<?>) o;
+            if (o instanceof Object[] array)
+                return Stream.of(array);
+            else if (o instanceof Iterable<?> iterable)
+                return StreamSupport.stream(iterable.spliterator(), false);
+            else if (o instanceof Stream<?> stream)
+                return stream;
             else
                 return Stream.of(o);
         }).toArray();
