@@ -147,11 +147,11 @@ public interface Reducer<T> extends Function<List<T>, T> {
     }
 
     /**
-     * Returns an exceptions reducer, returning the last exception with the previous ones as suppressed, or else null.
+     * Returns an exceptions reducer, returning the first exception with subsequent ones as suppressed, or else null.
      */
     static Reducer<Exception> suppressor() {
         return orElseNull(exceptions -> {
-            Exception main = Sugar.removeLast(Sugar.requireFull(exceptions));
+            Exception main = Sugar.removeFirst(Sugar.requireFull(exceptions));
             exceptions.forEach(main::addSuppressed);
             return main;
         });

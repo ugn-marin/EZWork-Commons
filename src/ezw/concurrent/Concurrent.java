@@ -7,6 +7,7 @@ import ezw.function.UnsafeRunnable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -78,7 +79,8 @@ public abstract class Concurrent {
     }
 
     /**
-     * Constructs a thread factory naming the threads as name and thread number: <code>"name #"</code>
+     * Constructs a thread factory naming the threads as name and thread number: <code>"name #"</code>.<br>
+     * The numbers start appearing from 2, so single threaded pools have the thread name as just <code>"name"</code>.
      * @param name The name.
      * @return The thread factory.
      */
@@ -88,18 +90,17 @@ public abstract class Concurrent {
 
     private static class NamedThreadFactory implements ThreadFactory {
         private final String name;
-        private final ThreadGroup group;
         private final AtomicInteger threadNumber = new AtomicInteger();
 
         NamedThreadFactory(String name) {
-            this.name = name;
-            var sm = System.getSecurityManager();
-            group = sm != null ? sm.getThreadGroup() : Thread.currentThread().getThreadGroup();
+            this.name = Objects.requireNonNull(name, "Name is null.");
         }
 
         @Override
         public Thread newThread(Runnable task) {
-            var thread = new Thread(group, task, name + " " + threadNumber.incrementAndGet(), 0);
+            int number = threadNumber.incrementAndGet();
+            String threadName = number > 1 ? name + " " + number : name;
+            var thread = new Thread(task, threadName);
             if (thread.isDaemon())
                 thread.setDaemon(false);
             if (thread.getPriority() != Thread.NORM_PRIORITY)

@@ -67,6 +67,18 @@ public abstract class Sugar {
     }
 
     /**
+     * Repeats a runnable call indefinitely (or until throws a runtime exception or error).
+     * @param runnable The runnable.
+     */
+    @SuppressWarnings("InfiniteLoopStatement")
+    public static void repeat(Runnable runnable) {
+        Objects.requireNonNull(runnable, "Runnable is null.");
+        while (true) {
+            runnable.run();
+        }
+    }
+
+    /**
      * Produces and accepts values into the consumer as long as they pass the predicate.
      * @param callable The callable producing the values.
      * @param consumer The values consumer.
@@ -127,7 +139,7 @@ public abstract class Sugar {
      * Returns the exception as is if runtime exception, else as undeclared.
      */
     public static RuntimeException sneaky(Exception e) {
-        return e instanceof RuntimeException ? (RuntimeException) e : new UndeclaredThrowableException(e);
+        return e instanceof RuntimeException re ? re : new UndeclaredThrowableException(e);
     }
 
     /**
@@ -161,12 +173,12 @@ public abstract class Sugar {
     public static void throwIfNonNull(Throwable throwable) throws Exception {
         if (throwable == null)
             return;
-        if (throwable instanceof Error)
-            throw (Error) throwable;
+        if (throwable instanceof Error error)
+            throw error;
         if (throwable instanceof UndeclaredThrowableException)
             throwIfNonNull(throwable.getCause());
-        if (throwable instanceof Exception)
-            throw (Exception) throwable;
+        if (throwable instanceof Exception e)
+            throw e;
         throw new UndeclaredThrowableException(throwable);
     }
 
@@ -360,6 +372,17 @@ public abstract class Sugar {
     }
 
     /**
+     * Returns a union stream of elements from the streams passed.
+     * @param streams An array of streams.
+     * @param <T> The type of the streams' elements.
+     * @return A union stream of elements from the streams passed.
+     */
+    @SafeVarargs
+    public static <T> Stream<T> union(Stream<T>... streams) {
+        return Arrays.stream(requireFull(streams)).flatMap(Function.identity());
+    }
+
+    /**
      * Returns a flat union array of the objects passed. That is, for any member being an array, an iterable or a stream
      * itself, the inner members are added to the flat union. The order of the items is preserved as in the members.
      * @param objects An array of objects.
@@ -367,12 +390,12 @@ public abstract class Sugar {
      */
     public static Object[] flat(Object... objects) {
         return Arrays.stream(Objects.requireNonNull(objects, "Array is null.")).flatMap(o -> {
-            if (o instanceof Object[])
-                return Stream.of((Object[]) o);
-            else if (o instanceof Iterable)
-                return StreamSupport.stream(((Iterable<?>) o).spliterator(), false);
-            else if (o instanceof Stream)
-                return (Stream<?>) o;
+            if (o instanceof Object[] array)
+                return Stream.of(array);
+            else if (o instanceof Iterable<?> iterable)
+                return StreamSupport.stream(iterable.spliterator(), false);
+            else if (o instanceof Stream<?> stream)
+                return stream;
             else
                 return Stream.of(o);
         }).toArray();
