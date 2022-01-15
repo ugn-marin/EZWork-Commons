@@ -7,24 +7,8 @@ import java.util.function.Function;
 /**
  * A function modifying double values to a defined scale.
  */
-public class Scale implements Function<Double, Double> {
-    private static final Scale defaultScale = new Scale();
-    private final int scale;
-
-    /**
-     * Constructs a scale function with a default scale of 2.
-     */
-    public Scale() {
-        this(2);
-    }
-
-    /**
-     * Constructs a scale function.
-     * @param scale The target scale.
-     */
-    public Scale(int scale) {
-        this.scale = scale;
-    }
+public record Scale(int scale) implements Function<Double, Double> {
+    private static final Scale defaultScale = new Scale(2);
 
     /**
      * Returns the default scale function instance with a scale of 2.
