@@ -1,8 +1,9 @@
 package ezw.concurrent;
 
-import java.util.concurrent.Callable;
+import ezw.function.UnsafeRunnable;
+import ezw.function.UnsafeSupplier;
+
 import java.util.concurrent.ExecutorService;
-import java.util.function.Supplier;
 
 /**
  * Utility methods and interfaces for handling interruptible flows.
@@ -12,60 +13,33 @@ public abstract class Interruptible {
     private Interruptible() {}
 
     /**
-     * A callable throwing <code>InterruptedException</code>.
+     * An unsafe supplier throwing <code>InterruptedException</code>.
      */
-    public interface InterruptibleCallable<V> extends Callable<V> {
+    public interface InterruptibleSupplier<V> extends UnsafeSupplier<V> {
 
         @Override
-        V call() throws InterruptedException;
-
-        /**
-         * Constructs a supplier wrapper, wrapping the <code>InterruptedException</code> in an
-         * <code>InterruptedRuntimeException</code>.
-         */
-        default Supplier<V> toSupplier() {
-            return () -> {
-                try {
-                    return call();
-                } catch (InterruptedException e) {
-                    throw new InterruptedRuntimeException(e);
-                }
-            };
-        }
+        V get() throws InterruptedException;
     }
 
     /**
      * A functional runnable throwing <code>InterruptedException</code>.
      */
     @FunctionalInterface
-    public interface InterruptibleRunnable {
+    public interface InterruptibleRunnable extends UnsafeRunnable {
 
+        @Override
         void run() throws InterruptedException;
-
-        /**
-         * Constructs a runnable wrapper, wrapping the <code>InterruptedException</code> in an
-         * <code>InterruptedRuntimeException</code>.
-         */
-        default Runnable toRunnable() {
-            return () -> {
-                try {
-                    run();
-                } catch (InterruptedException e) {
-                    throw new InterruptedRuntimeException(e);
-                }
-            };
-        }
     }
 
     /**
-     * Calls the interruptible callable, wrapping the <code>InterruptedException</code> in an
+     * Runs the interruptible supplier, wrapping the <code>InterruptedException</code> in an
      * <code>InterruptedRuntimeException</code>.
      * @param interruptible The interruptible callable.
      * @param <V> The callable result type.
      * @return The callable result.
      * @throws InterruptedRuntimeException If interrupted.
      */
-    public static <V> V call(InterruptibleCallable<V> interruptible) throws InterruptedRuntimeException {
+    public static <V> V get(InterruptibleSupplier<V> interruptible) throws InterruptedRuntimeException {
         return interruptible.toSupplier().get();
     }
 

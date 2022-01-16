@@ -1,5 +1,6 @@
 package ezw;
 
+import ezw.concurrent.InterruptedRuntimeException;
 import ezw.function.UnsafeConsumer;
 import ezw.function.UnsafeRunnable;
 
@@ -139,7 +140,11 @@ public abstract class Sugar {
      * Returns the exception as is if runtime exception, else as undeclared.
      */
     public static RuntimeException sneaky(Exception e) {
-        return e instanceof RuntimeException re ? re : new UndeclaredThrowableException(e);
+        if (e instanceof RuntimeException re)
+            return re;
+        else if (e instanceof InterruptedException ie)
+            return new InterruptedRuntimeException(ie);
+        return new UndeclaredThrowableException(e);
     }
 
     /**
