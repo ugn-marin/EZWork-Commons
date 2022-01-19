@@ -117,17 +117,17 @@ public class Matrix<T> {
     }
 
     /**
-     * Returns the row at the specified index. Modifying the result will have no effect on the matrix.
+     * Returns the row at the specified index as an unmodifiable list.
      * @throws IndexOutOfBoundsException If the index is out of bounds.
      */
     public List<T> getRow(int y) {
         if (isEmpty())
             throw new IndexOutOfBoundsException("Matrix is empty, can't get row " + y);
-        return content.stream().map(column -> column.get(y)).collect(Collectors.toList());
+        return content.stream().map(column -> column.get(y)).toList();
     }
 
     /**
-     * Returns the first row. Modifying the result will have no effect on the matrix.
+     * Returns the first row as an unmodifiable list.
      * @throws IndexOutOfBoundsException If the matrix is empty.
      */
     public List<T> getFirstRow() {
@@ -135,7 +135,7 @@ public class Matrix<T> {
     }
 
     /**
-     * Returns the last row. Modifying the result will have no effect on the matrix.
+     * Returns the last row as an unmodifiable list.
      * @throws IndexOutOfBoundsException If the matrix is empty.
      */
     public List<T> getLastRow() {
@@ -143,15 +143,15 @@ public class Matrix<T> {
     }
 
     /**
-     * Returns the column at the specified index. Modifying the result will have no effect on the matrix.
+     * Returns the column at the specified index as an unmodifiable list.
      * @throws IndexOutOfBoundsException If the index is out of bounds.
      */
     public List<T> getColumn(int x) {
-        return new ArrayList<>(content.get(x));
+        return Sugar.unmodifiableCopy(content.get(x));
     }
 
     /**
-     * Returns the first column. Modifying the result will have no effect on the matrix.
+     * Returns the first column as an unmodifiable list.
      * @throws IndexOutOfBoundsException If the matrix is empty.
      */
     public List<T> getFirstColumn() {
@@ -159,7 +159,7 @@ public class Matrix<T> {
     }
 
     /**
-     * Returns the last column. Modifying the result will have no effect on the matrix.
+     * Returns the last column as an unmodifiable list.
      * @throws IndexOutOfBoundsException If the matrix is empty.
      */
     public List<T> getLastColumn() {
@@ -200,20 +200,17 @@ public class Matrix<T> {
     }
 
     /**
-     * Returns the matrix cells as an ordered list of rows. Modifying the result will have no effect on the matrix.
+     * Returns the matrix cells as an ordered, unmodifiable list of rows.
      */
     public List<List<T>> getRows() {
-        List<List<T>> rows = new ArrayList<>();
-        getRowsRange().forEach(y -> rows.add(content.stream().map(column -> column.get(y))
-                .collect(Collectors.toList())));
-        return rows;
+        return getRowsRange().stream().map(y -> content.stream().map(column -> column.get(y)).toList()).toList();
     }
 
     /**
-     * Returns the matrix cells as an ordered list of columns. Modifying the result will have no effect on the matrix.
+     * Returns the matrix cells as an ordered, unmodifiable list of columns.
      */
     public List<List<T>> getColumns() {
-        return content.stream().map(ArrayList::new).collect(Collectors.toList());
+        return content.stream().map(Sugar::unmodifiableCopy).toList();
     }
 
     /**
@@ -354,13 +351,13 @@ public class Matrix<T> {
     /**
      * Removes the row at the specified index, and shrinks the matrix by 1 row.
      * @param y The row index.
-     * @return The removed row.
+     * @return The removed row as an unmodifiable list.
      * @throws IndexOutOfBoundsException If the index is out of bounds.
      */
     public List<T> removeRow(int y) {
         if (validateNegative(y) >= rows())
             throw new IndexOutOfBoundsException("Row " + y + " doesn't exist in a total of " + rows());
-        var row = content.stream().map(column -> column.remove(y)).collect(Collectors.toList());
+        var row = content.stream().map(column -> column.remove(y)).toList();
         if (rows() == 0)
             clear();
         return row;
@@ -545,7 +542,7 @@ public class Matrix<T> {
     public void flip() {
         var rows = getRows();
         clear();
-        content.addAll(rows);
+        rows.stream().map(ArrayList::new).forEach(content::add);
     }
 
     /**

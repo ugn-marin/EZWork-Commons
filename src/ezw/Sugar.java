@@ -353,6 +353,17 @@ public abstract class Sugar {
     }
 
     /**
+     * Returns an unmodifiable copy of the list. Unlike <code>List.copyOf</code>, this function allows null elements in
+     * the list.
+     * @param list The list.
+     * @param <T> The list elements type.
+     * @return The unmodifiable copy of the list.
+     */
+    public static <T> List<T> unmodifiableCopy(List<T> list) {
+        return Collections.unmodifiableList(new ArrayList<>(Objects.requireNonNull(list, "List is null.")));
+    }
+
+    /**
      * Returns a set of all members of the collection that are instances of a certain type.
      * @param objects An objects collection.
      * @param type A class.

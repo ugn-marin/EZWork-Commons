@@ -3,6 +3,7 @@ package ezw.data;
 import org.junit.jupiter.api.*;
 
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class MatrixTest {
@@ -1299,10 +1300,16 @@ public class MatrixTest {
         var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
-        matrix.getRow(0).add('X');
-        matrix.getRows().get(0).add('X');
-        matrix.getColumn(0).add('Y');
-        matrix.getColumns().get(0).add('Y');
+        Consumer<Runnable> assertUnmodifiable = modification -> {
+            try {
+                modification.run();
+                Assertions.fail("Modification succeeded");
+            } catch (UnsupportedOperationException ignore) {}
+        };
+        assertUnmodifiable.accept(() -> matrix.getRow(0).add('X'));
+        assertUnmodifiable.accept(() -> matrix.getRows().get(0).add('X'));
+        assertUnmodifiable.accept(() -> matrix.getColumn(0).add('Y'));
+        assertUnmodifiable.accept(() -> matrix.getColumns().get(0).add('Y'));
         Assertions.assertTrue(matrix.size().equals(2, 2));
         assertData("a,b|c,d", matrix);
     }
