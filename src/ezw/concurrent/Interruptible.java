@@ -1,12 +1,15 @@
 package ezw.concurrent;
 
+import ezw.function.UnsafeConsumer;
+import ezw.function.UnsafeFunction;
 import ezw.function.UnsafeRunnable;
 import ezw.function.UnsafeSupplier;
 
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 
 /**
- * Utility methods and interfaces for handling interruptible flows.
+ * Utility methods and interfaces for handling interruptible flows, and wrapping interrupted exceptions if required.
  */
 public abstract class Interruptible {
 
@@ -15,10 +18,28 @@ public abstract class Interruptible {
     /**
      * An unsafe supplier throwing <code>InterruptedException</code>.
      */
-    public interface InterruptibleSupplier<V> extends UnsafeSupplier<V> {
+    public interface InterruptibleSupplier<O> extends UnsafeSupplier<O> {
 
         @Override
-        V get() throws InterruptedException;
+        O get() throws InterruptedException;
+    }
+
+    /**
+     * An unsafe consumer throwing <code>InterruptedException</code>.
+     */
+    public interface InterruptibleConsumer<I> extends UnsafeConsumer<I> {
+
+        @Override
+        void accept(I t) throws InterruptedException;
+    }
+
+    /**
+     * An unsafe function throwing <code>InterruptedException</code>.
+     */
+    public interface InterruptibleFunction<I, O> extends UnsafeFunction<I, O> {
+
+        @Override
+        O apply(I t) throws InterruptedException;
     }
 
     /**
@@ -34,13 +55,39 @@ public abstract class Interruptible {
     /**
      * Runs the interruptible supplier, wrapping the <code>InterruptedException</code> in an
      * <code>InterruptedRuntimeException</code>.
-     * @param interruptible The interruptible callable.
-     * @param <V> The callable result type.
-     * @return The callable result.
+     * @param interruptible The interruptible supplier.
+     * @param <O> The supplier output type.
+     * @return The supplier output.
      * @throws InterruptedRuntimeException If interrupted.
      */
-    public static <V> V get(InterruptibleSupplier<V> interruptible) throws InterruptedRuntimeException {
-        return interruptible.toSupplier().get();
+    public static <O> O get(InterruptibleSupplier<O> interruptible) throws InterruptedRuntimeException {
+        return Objects.requireNonNull(interruptible, "Interruptible is null.").toSupplier().get();
+    }
+
+    /**
+     * Runs the interruptible consumer, wrapping the <code>InterruptedException</code> in an
+     * <code>InterruptedRuntimeException</code>.
+     * @param interruptible The interruptible consumer.
+     * @param t The consumer input.
+     * @param <I> The consumer input type.
+     * @throws InterruptedRuntimeException If interrupted.
+     */
+    public static <I> void accept(InterruptibleConsumer<I> interruptible, I t) throws InterruptedRuntimeException {
+        Objects.requireNonNull(interruptible, "Interruptible is null.").toConsumer().accept(t);
+    }
+
+    /**
+     * Runs the interruptible function, wrapping the <code>InterruptedException</code> in an
+     * <code>InterruptedRuntimeException</code>.
+     * @param interruptible The interruptible function.
+     * @param t The function input.
+     * @param <I> The function input type.
+     * @param <O> The function output type.
+     * @return The function output.
+     * @throws InterruptedRuntimeException If interrupted.
+     */
+    public static <I, O> O apply(InterruptibleFunction<I, O> interruptible, I t) throws InterruptedRuntimeException {
+        return Objects.requireNonNull(interruptible, "Interruptible is null.").toFunction().apply(t);
     }
 
     /**
@@ -50,7 +97,7 @@ public abstract class Interruptible {
      * @throws InterruptedRuntimeException If interrupted.
      */
     public static void run(InterruptibleRunnable interruptible) throws InterruptedRuntimeException {
-        interruptible.toRunnable().run();
+        Objects.requireNonNull(interruptible, "Interruptible is null.").toRunnable().run();
     }
 
     /**
@@ -67,29 +114,43 @@ public abstract class Interruptible {
     }
 
     /**
+     * Runs the object's <code>wait</code> method, wrapping the <code>InterruptedException</code> in an
+     * <code>InterruptedRuntimeException</code>. Equivalent to:
+     * <pre>
+     * Interruptible.accept(object::wait, millis)
+     * </pre>
+     * @param object The object.
+     * @param millis The maximum time to wait in milliseconds.
+     * @throws InterruptedRuntimeException If interrupted.
+     */
+    public static void wait(Object object, long millis) throws InterruptedRuntimeException {
+        accept(object::wait, millis);
+    }
+
+    /**
      * Runs the <code>sleep</code> method, wrapping the <code>InterruptedException</code> in an
      * <code>InterruptedRuntimeException</code>. Equivalent to:
      * <pre>
-     * Interruptible.run(() -> Thread.sleep(millis))
+     * Interruptible.accept(Thread::sleep, millis)
      * </pre>
      * @param millis The length of time to sleep in milliseconds.
      * @throws InterruptedRuntimeException If interrupted.
      */
     public static void sleep(long millis) throws InterruptedRuntimeException {
-        run(() -> Thread.sleep(millis));
+        accept(Thread::sleep, millis);
     }
 
     /**
      * Runs the <code>join</code> method with the executor service, wrapping the <code>InterruptedException</code> in an
      * <code>InterruptedRuntimeException</code>. Equivalent to:
      * <pre>
-     * Interruptible.run(() -> Concurrent.join(executorService))
+     * Interruptible.accept(Concurrent::join, executorService)
      * </pre>
      * @param executorService The executor service.
      * @throws InterruptedRuntimeException If interrupted.
      */
     public static void join(ExecutorService executorService) throws InterruptedRuntimeException {
-        run(() -> Concurrent.join(executorService));
+        accept(Concurrent::join, executorService);
     }
 
     /**
