@@ -12,15 +12,15 @@ import java.util.function.Function;
 @FunctionalInterface
 public interface UnsafeFunction<I, O> {
 
-    O apply(I item) throws Exception;
+    O apply(I t) throws Exception;
 
     /**
      * Wraps this function implementation in a Function throwing sneaky.
      */
     default Function<I, O> toFunction() {
-        return item -> {
+        return t -> {
             try {
-                return apply(item);
+                return apply(t);
             } catch (Exception e) {
                 throw Sugar.sneaky(e);
             }

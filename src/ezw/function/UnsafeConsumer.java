@@ -11,15 +11,15 @@ import java.util.function.Consumer;
 @FunctionalInterface
 public interface UnsafeConsumer<I> {
 
-    void accept(I item) throws Exception;
+    void accept(I t) throws Exception;
 
     /**
      * Wraps this consumer implementation in a Consumer throwing sneaky.
      */
     default Consumer<I> toConsumer() {
-        return item -> {
+        return t -> {
             try {
-                accept(item);
+                accept(t);
             } catch (Exception e) {
                 throw Sugar.sneaky(e);
             }
