@@ -55,49 +55,49 @@ public abstract class Interruptible {
     /**
      * Runs the interruptible supplier, wrapping the <code>InterruptedException</code> in an
      * <code>InterruptedRuntimeException</code>.
-     * @param interruptible The interruptible supplier.
+     * @param supplier The interruptible supplier.
      * @param <O> The supplier output type.
      * @return The supplier output.
      * @throws InterruptedRuntimeException If interrupted.
      */
-    public static <O> O get(InterruptibleSupplier<O> interruptible) throws InterruptedRuntimeException {
-        return Objects.requireNonNull(interruptible, "Interruptible is null.").toSupplier().get();
+    public static <O> O get(InterruptibleSupplier<O> supplier) throws InterruptedRuntimeException {
+        return Objects.requireNonNull(supplier, "Interruptible supplier is null.").toSupplier().get();
     }
 
     /**
      * Runs the interruptible consumer, wrapping the <code>InterruptedException</code> in an
      * <code>InterruptedRuntimeException</code>.
-     * @param interruptible The interruptible consumer.
+     * @param consumer The interruptible consumer.
      * @param t The consumer input.
      * @param <I> The consumer input type.
      * @throws InterruptedRuntimeException If interrupted.
      */
-    public static <I> void accept(InterruptibleConsumer<I> interruptible, I t) throws InterruptedRuntimeException {
-        Objects.requireNonNull(interruptible, "Interruptible is null.").toConsumer().accept(t);
+    public static <I> void accept(InterruptibleConsumer<I> consumer, I t) throws InterruptedRuntimeException {
+        Objects.requireNonNull(consumer, "Interruptible consumer is null.").toConsumer().accept(t);
     }
 
     /**
      * Runs the interruptible function, wrapping the <code>InterruptedException</code> in an
      * <code>InterruptedRuntimeException</code>.
-     * @param interruptible The interruptible function.
+     * @param function The interruptible function.
      * @param t The function input.
      * @param <I> The function input type.
      * @param <O> The function output type.
      * @return The function output.
      * @throws InterruptedRuntimeException If interrupted.
      */
-    public static <I, O> O apply(InterruptibleFunction<I, O> interruptible, I t) throws InterruptedRuntimeException {
-        return Objects.requireNonNull(interruptible, "Interruptible is null.").toFunction().apply(t);
+    public static <I, O> O apply(InterruptibleFunction<I, O> function, I t) throws InterruptedRuntimeException {
+        return Objects.requireNonNull(function, "Interruptible function is null.").toFunction().apply(t);
     }
 
     /**
      * Runs the interruptible runnable, wrapping the <code>InterruptedException</code> in an
      * <code>InterruptedRuntimeException</code>.
-     * @param interruptible The interruptible runnable.
+     * @param runnable The interruptible runnable.
      * @throws InterruptedRuntimeException If interrupted.
      */
-    public static void run(InterruptibleRunnable interruptible) throws InterruptedRuntimeException {
-        Objects.requireNonNull(interruptible, "Interruptible is null.").toRunnable().run();
+    public static void run(InterruptibleRunnable runnable) throws InterruptedRuntimeException {
+        Objects.requireNonNull(runnable, "Interruptible runnable is null.").toRunnable().run();
     }
 
     /**
