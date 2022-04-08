@@ -384,7 +384,7 @@ public abstract class Sugar {
      * @return True if instance of any, else false.
      */
     public static boolean instanceOfAny(Object object, Class<?>... types) {
-        return object != null && Arrays.stream(types).anyMatch(t -> t.isAssignableFrom(object.getClass()));
+        return object != null && Arrays.stream(requireFull(types)).anyMatch(t -> t.isAssignableFrom(object.getClass()));
     }
 
     /**
