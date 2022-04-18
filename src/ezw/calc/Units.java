@@ -2,7 +2,7 @@ package ezw.calc;
 
 import ezw.Sugar;
 
-import java.util.Arrays;
+import java.util.stream.Stream;
 
 /**
  * Units converters and utilities.
@@ -20,7 +20,7 @@ public abstract class Units {
         String name();
 
         default String describe(double value, Unit[] units) {
-            return Arrays.stream(units).filter(unit -> Math.abs(value) <= unit.getLimit()).findFirst()
+            return Stream.of(units).filter(unit -> Math.abs(value) <= unit.getLimit()).findFirst()
                     .orElse(Sugar.last(units)).describe(value, Sugar.first(units));
         }
 
