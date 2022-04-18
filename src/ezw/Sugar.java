@@ -62,7 +62,8 @@ public abstract class Sugar {
      */
     public static void repeat(int times, Runnable runnable) {
         Objects.requireNonNull(runnable, "Runnable is null.");
-        for (int i = 0; i < requireRange(times, 0, null); i++) {
+        requireRange(times, 0, null);
+        for (int i = 0; i < times; i++) {
             runnable.run();
         }
     }
@@ -178,8 +179,8 @@ public abstract class Sugar {
     public static void throwIfNonNull(Throwable throwable) throws Exception {
         if (throwable == null)
             return;
-        if (throwable instanceof Error error)
-            throw error;
+        if (throwable instanceof Error e)
+            throw e;
         if (throwable instanceof UndeclaredThrowableException)
             throwIfNonNull(throwable.getCause());
         if (throwable instanceof Exception e)
@@ -242,7 +243,7 @@ public abstract class Sugar {
      * @throws NullPointerException If the array or any of its members is null.
      */
     public static <T> T[] requireNoneNull(T[] objects) {
-        Arrays.stream(Objects.requireNonNull(objects, "Array is null.")).forEach(
+        Stream.of(Objects.requireNonNull(objects, "Array is null.")).forEach(
                 o -> Objects.requireNonNull(o, "Array contains a null reference."));
         return objects;
     }
@@ -384,7 +385,7 @@ public abstract class Sugar {
      * @return True if instance of any, else false.
      */
     public static boolean instanceOfAny(Object object, Class<?>... types) {
-        return object != null && Arrays.stream(requireFull(types)).anyMatch(t -> t.isAssignableFrom(object.getClass()));
+        return object != null && Stream.of(requireFull(types)).anyMatch(t -> t.isAssignableFrom(object.getClass()));
     }
 
     /**
@@ -395,7 +396,7 @@ public abstract class Sugar {
      */
     @SafeVarargs
     public static <T> Stream<T> union(Stream<T>... streams) {
-        return Arrays.stream(requireFull(streams)).flatMap(Function.identity());
+        return Stream.of(requireFull(streams)).flatMap(Function.identity());
     }
 
     /**
@@ -405,7 +406,7 @@ public abstract class Sugar {
      * @return A flat union array of the objects passed.
      */
     public static Object[] flat(Object... objects) {
-        return Arrays.stream(Objects.requireNonNull(objects, "Array is null.")).flatMap(o -> {
+        return Stream.of(Objects.requireNonNull(objects, "Array is null.")).flatMap(o -> {
             if (o instanceof Object[] array)
                 return Stream.of(array);
             else if (o instanceof Iterable<?> iterable)
@@ -424,7 +425,7 @@ public abstract class Sugar {
      * @return The strings array.
      */
     public static <T> String[] toStrings(T[] array) {
-        return Arrays.stream(Objects.requireNonNull(array, "Array is null.")).filter(Objects::nonNull)
+        return Stream.of(Objects.requireNonNull(array, "Array is null.")).filter(Objects::nonNull)
                 .map(Objects::toString).toArray(String[]::new);
     }
 
@@ -435,7 +436,7 @@ public abstract class Sugar {
      * @return The resulting string.
      */
     public static String remove(String text, String... substrings) {
-        return replace(text, toStrings(Arrays.stream(requireNoneNull(substrings)).flatMap(s -> Stream.of(s, ""))
+        return replace(text, toStrings(Stream.of(requireNoneNull(substrings)).flatMap(s -> Stream.of(s, ""))
                 .toArray()));
     }
 

@@ -5,11 +5,11 @@ import ezw.function.Reducer;
 import ezw.function.UnsafeRunnable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 /**
  * Various concurrency utilities.
@@ -45,7 +45,7 @@ public abstract class Concurrent {
      * @param tasks The tasks.
      */
     public static void run(Reducer<Exception> exceptionsReducer, Runnable... tasks) throws Exception {
-        getAll(exceptionsReducer, Arrays.stream(Sugar.requireFull(tasks)).map(task -> run(task::run))
+        getAll(exceptionsReducer, Stream.of(Sugar.requireFull(tasks)).map(task -> run(task::run))
                 .toArray(Future[]::new));
     }
 
