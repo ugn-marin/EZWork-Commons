@@ -3,6 +3,7 @@ package ezw.flow;
 import ezw.Sugar;
 import ezw.concurrent.InterruptedRuntimeException;
 import ezw.function.Reducer;
+import ezw.function.UnsafeRunnable;
 
 import java.io.InterruptedIOException;
 import java.nio.channels.ClosedByInterruptException;
@@ -83,9 +84,10 @@ public final class Retry<O> implements Callable<O> {
      */
     public static final class Builder {
         private final int tries;
-        private Function<Integer, Long> intervalFunction;
-        private BiPredicate<Integer, Exception> continuePredicate;
-        private Reducer<Exception> exceptionsReducer;
+        private Function<Integer, Long> intervalFunction = t -> 0L;
+        private BiPredicate<Integer, Exception> continuePredicate = blacklist(InterruptedException.class,
+                InterruptedRuntimeException.class, ClosedByInterruptException.class, InterruptedIOException.class);
+        private Reducer<Exception> exceptionsReducer = Reducer.suppressor();
 
         private Builder(int tries) {
             this.tries = Sugar.requireRange(tries, 1, 1000);
@@ -98,7 +100,7 @@ public final class Retry<O> implements Callable<O> {
          * @return This builder.
          */
         public Builder interval(Function<Integer, Long> intervalFunction) {
-            this.intervalFunction = intervalFunction;
+            this.intervalFunction = Objects.requireNonNull(intervalFunction, "Interval function is null.");
             return this;
         }
 
@@ -135,7 +137,7 @@ public final class Retry<O> implements Callable<O> {
          * @return This builder.
          */
         public Builder continueWhile(BiPredicate<Integer, Exception> continuePredicate) {
-            this.continuePredicate = continuePredicate;
+            this.continuePredicate = Objects.requireNonNull(continuePredicate, "Continue predicate is null.");
             return this;
         }
 
@@ -147,8 +149,17 @@ public final class Retry<O> implements Callable<O> {
          * @return This builder.
          */
         public Builder reduce(Reducer<Exception> exceptionsReducer) {
-            this.exceptionsReducer = exceptionsReducer;
+            this.exceptionsReducer = Objects.requireNonNull(exceptionsReducer, "Exceptions reducer is null.");
             return this;
+        }
+
+        /**
+         * Builds a retry. Can be reused for new runnables if no stateful functions were provided to the builder.
+         * @param runnable The runnable.
+         * @return The retry.
+         */
+        public Retry<Void> build(UnsafeRunnable runnable) {
+            return build(Objects.requireNonNull(runnable, "Runnable is null.").toVoidCallable());
         }
 
         /**
@@ -157,11 +168,8 @@ public final class Retry<O> implements Callable<O> {
          * @return The retry.
          */
         public <O> Retry<O> build(Callable<O> callable) {
-            return new Retry<>(Objects.requireNonNull(callable, "Callable is null."), tries,
-                    Objects.requireNonNullElse(intervalFunction, t -> 0L), Objects.requireNonNullElse(continuePredicate,
-                    blacklist(InterruptedException.class, InterruptedRuntimeException.class,
-                            ClosedByInterruptException.class, InterruptedIOException.class)),
-                    Objects.requireNonNullElse(exceptionsReducer, Reducer.suppressor()));
+            return new Retry<>(Objects.requireNonNull(callable, "Callable is null."), tries, intervalFunction,
+                    continuePredicate, exceptionsReducer);
         }
     }
 }
