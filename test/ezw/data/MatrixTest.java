@@ -131,6 +131,52 @@ public class MatrixTest {
     }
 
     @Test
+    void stretchByData4x3() {
+        var matrix = new Matrix<Integer>();
+        matrix.addRow(1);
+        matrix.addRow(2, 3);
+        matrix.addRow(4, 5, 6);
+        matrix.addColumn(7, 8);
+        Assertions.assertTrue(matrix.size().equals(4, 3));
+        assertData("1,null,null,7|2,3,null,8|4,5,6,null", matrix);
+    }
+
+    @Test
+    void stretchByData4x4() {
+        var matrix = new Matrix<Integer>();
+        matrix.addRow(1);
+        matrix.addRow(2, 3);
+        matrix.addRow(4, 5, 6);
+        matrix.addColumn(7, 8, 9, 10);
+        Assertions.assertTrue(matrix.size().equals(4, 4));
+        assertData("1,null,null,7|2,3,null,8|4,5,6,9|null,null,null,10", matrix);
+    }
+
+    @Test
+    void stretchByData4x3Copy() {
+        var matrix = new Matrix<Integer>();
+        matrix.addRow(1);
+        matrix.addRow(2, 3);
+        matrix.addRow(4, 5, 6);
+        matrix.addColumn(7, 8);
+        var copy = new Matrix<>(matrix);
+        Assertions.assertTrue(copy.size().equals(4, 3));
+        assertData("1,null,null,7|2,3,null,8|4,5,6,null", copy);
+    }
+
+    @Test
+    void stretchByData4x4Copy() {
+        var matrix = new Matrix<Integer>();
+        matrix.addRow(1);
+        matrix.addRow(2, 3);
+        matrix.addRow(4, 5, 6);
+        matrix.addColumn(7, 8, 9, 10);
+        var copy = new Matrix<>(matrix);
+        Assertions.assertTrue(copy.size().equals(4, 4));
+        assertData("1,null,null,7|2,3,null,8|4,5,6,9|null,null,null,10", copy);
+    }
+
+    @Test
     void build2x2EmptyColumns() {
         var matrix = new Matrix<Integer>();
         matrix.addColumn();
