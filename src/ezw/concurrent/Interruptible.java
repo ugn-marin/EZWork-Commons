@@ -18,7 +18,7 @@ public abstract class Interruptible {
     /**
      * An unsafe supplier throwing <code>InterruptedException</code>.
      */
-    public interface InterruptibleSupplier<O> extends UnsafeSupplier<O> {
+    public interface Supplier<O> extends UnsafeSupplier<O> {
 
         @Override
         O get() throws InterruptedException;
@@ -27,7 +27,7 @@ public abstract class Interruptible {
     /**
      * An unsafe consumer throwing <code>InterruptedException</code>.
      */
-    public interface InterruptibleConsumer<I> extends UnsafeConsumer<I> {
+    public interface Consumer<I> extends UnsafeConsumer<I> {
 
         @Override
         void accept(I t) throws InterruptedException;
@@ -36,7 +36,7 @@ public abstract class Interruptible {
     /**
      * An unsafe function throwing <code>InterruptedException</code>.
      */
-    public interface InterruptibleFunction<I, O> extends UnsafeFunction<I, O> {
+    public interface Function<I, O> extends UnsafeFunction<I, O> {
 
         @Override
         O apply(I t) throws InterruptedException;
@@ -45,8 +45,7 @@ public abstract class Interruptible {
     /**
      * A functional runnable throwing <code>InterruptedException</code>.
      */
-    @FunctionalInterface
-    public interface InterruptibleRunnable extends UnsafeRunnable {
+    public interface Runnable extends UnsafeRunnable {
 
         @Override
         void run() throws InterruptedException;
@@ -60,7 +59,7 @@ public abstract class Interruptible {
      * @return The supplier output.
      * @throws InterruptedRuntimeException If interrupted.
      */
-    public static <O> O get(InterruptibleSupplier<O> supplier) throws InterruptedRuntimeException {
+    public static <O> O get(Supplier<O> supplier) throws InterruptedRuntimeException {
         return Objects.requireNonNull(supplier, "Interruptible supplier is null.").toSupplier().get();
     }
 
@@ -72,7 +71,7 @@ public abstract class Interruptible {
      * @param <I> The consumer input type.
      * @throws InterruptedRuntimeException If interrupted.
      */
-    public static <I> void accept(InterruptibleConsumer<I> consumer, I t) throws InterruptedRuntimeException {
+    public static <I> void accept(Consumer<I> consumer, I t) throws InterruptedRuntimeException {
         Objects.requireNonNull(consumer, "Interruptible consumer is null.").toConsumer().accept(t);
     }
 
@@ -86,7 +85,7 @@ public abstract class Interruptible {
      * @return The function output.
      * @throws InterruptedRuntimeException If interrupted.
      */
-    public static <I, O> O apply(InterruptibleFunction<I, O> function, I t) throws InterruptedRuntimeException {
+    public static <I, O> O apply(Function<I, O> function, I t) throws InterruptedRuntimeException {
         return Objects.requireNonNull(function, "Interruptible function is null.").toFunction().apply(t);
     }
 
@@ -96,7 +95,7 @@ public abstract class Interruptible {
      * @param runnable The interruptible runnable.
      * @throws InterruptedRuntimeException If interrupted.
      */
-    public static void run(InterruptibleRunnable runnable) throws InterruptedRuntimeException {
+    public static void run(Runnable runnable) throws InterruptedRuntimeException {
         Objects.requireNonNull(runnable, "Interruptible runnable is null.").toRunnable().run();
     }
 

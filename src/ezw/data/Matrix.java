@@ -58,6 +58,15 @@ public class Matrix<T> {
     }
 
     /**
+     * Constructs a matrix containing the data from the provided matrix.
+     * @param matrix The matrix.
+     */
+    public Matrix(Matrix<T> matrix) {
+        this(matrix.size());
+        matrix.getBlock().forEach(coordinates -> set(coordinates, matrix.get(coordinates)));
+    }
+
+    /**
      * Returns true if the matrix size is [0, 0].
      */
     public boolean isEmpty() {

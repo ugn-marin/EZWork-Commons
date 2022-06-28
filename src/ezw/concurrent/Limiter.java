@@ -68,7 +68,8 @@ public class Limiter {
      */
     public void end() {
         synchronized (executing) {
-            executing.decrementAndGet();
+            if (executing.decrementAndGet() < 0)
+                throw new IllegalStateException("No registered operations to end.");
             executing.notifyAll();
         }
     }
