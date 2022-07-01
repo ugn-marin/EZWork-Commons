@@ -61,9 +61,9 @@ public class Matrix<T> {
      * Constructs a matrix containing the data from the provided matrix.
      * @param matrix The matrix.
      */
-    public Matrix(Matrix<T> matrix) {
+    public Matrix(Matrix<? extends T> matrix) {
         this(matrix.size());
-        matrix.getBlock().forEach(coordinates -> set(coordinates, matrix.get(coordinates)));
+        getBlock().forEach(coordinates -> set(coordinates, matrix.get(coordinates)));
     }
 
     /**
