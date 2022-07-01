@@ -365,6 +365,21 @@ public abstract class Sugar {
     }
 
     /**
+     * Returns the object if instance of type.
+     * @param object An object.
+     * @param type A class.
+     * @param orElse The default return value if the object is not an instance of the type.
+     * @param <T> The type to cast the object to, if is instance of the type. Must be assignable from <code>type</code>
+     *           - not validated.
+     * @return The object if instance of type, or the default.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T as(Object object, Class<?> type, T orElse) {
+        Objects.requireNonNull(type, "Type is null.");
+        return type.isInstance(object) ? (T) object : orElse;
+    }
+
+    /**
      * Returns a set of all members of the collection that are instances of a certain type.
      * @param objects An objects collection.
      * @param type A class.
