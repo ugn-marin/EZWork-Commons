@@ -14,7 +14,7 @@ import java.util.stream.Stream;
  * @param <T> The type of elements in the matrix.
  */
 public class Matrix<T> {
-    private final List<List<T>> content = new ArrayList<>();
+    private final List<List<T>> content;
 
     /**
      * Constructs an empty matrix.
@@ -41,7 +41,7 @@ public class Matrix<T> {
     public Matrix(int x, int y) {
         if (validateNegative(x) * validateNegative(y) == 0 && x != y)
             throw new IndexOutOfBoundsException("The matrix size can't be zero in one dimension.");
-        Sugar.repeat(x, () -> content.add(Sugar.fill(y)));
+        content = Sugar.fill(x, () -> Sugar.fill(y));
     }
 
     /**
@@ -50,6 +50,7 @@ public class Matrix<T> {
      * @throws IndexOutOfBoundsException If rows length is zero.
      */
     public Matrix(T[][] data) {
+        this();
         for (var row : data) {
             if (row.length == 0)
                 throw new IndexOutOfBoundsException("The matrix size can't be zero in one dimension.");
@@ -61,9 +62,19 @@ public class Matrix<T> {
      * Constructs a matrix containing the data from the provided matrix.
      * @param matrix The matrix.
      */
-    public Matrix(Matrix<? extends T> matrix) {
-        this(matrix.size());
-        getBlock().forEach(coordinates -> set(coordinates, matrix.get(coordinates)));
+    public Matrix(Matrix<T> matrix) {
+        this(new ArrayList<>(matrix.content.stream().map(ArrayList::new).toList()));
+    }
+
+    private Matrix(List<List<T>> content) {
+        this.content = content;
+    }
+
+    /**
+     * Returns an unmodifiable copy of the matrix.
+     */
+    public static <T> Matrix<T> unmodifiableCopy(Matrix<T> matrix) {
+        return new Matrix<>(matrix.content.stream().map(Sugar::unmodifiableCopy).toList());
     }
 
     /**
