@@ -3,7 +3,6 @@ package ezw.data;
 import org.junit.jupiter.api.*;
 
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class MatrixTest {
@@ -54,6 +53,13 @@ public class MatrixTest {
         } catch (IndexOutOfBoundsException e) {
             System.out.println(e.getMessage());
         }
+    }
+
+    private void assertUnmodifiable(Runnable runnable) {
+        try {
+            runnable.run();
+            Assertions.fail("Modification succeeded");
+        } catch (UnsupportedOperationException ignored) {}
     }
 
     @Test
@@ -1346,18 +1352,34 @@ public class MatrixTest {
         var matrix = new Matrix<Character>();
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
-        Consumer<Runnable> assertUnmodifiable = modification -> {
-            try {
-                modification.run();
-                Assertions.fail("Modification succeeded");
-            } catch (UnsupportedOperationException ignore) {}
-        };
-        assertUnmodifiable.accept(() -> matrix.getRow(0).add('X'));
-        assertUnmodifiable.accept(() -> matrix.getRows().get(0).add('X'));
-        assertUnmodifiable.accept(() -> matrix.getColumn(0).add('Y'));
-        assertUnmodifiable.accept(() -> matrix.getColumns().get(0).add('Y'));
+        assertUnmodifiable(() -> matrix.getRow(0).add('X'));
+        assertUnmodifiable(() -> matrix.getRows().get(0).add('X'));
+        assertUnmodifiable(() -> matrix.getColumn(0).add('Y'));
+        assertUnmodifiable(() -> matrix.getColumns().get(0).add('Y'));
         Assertions.assertTrue(matrix.size().equals(2, 2));
         assertData("a,b|c,d", matrix);
+    }
+
+    @Test
+    void unmodifiableCopy() {
+        var matrix = new Matrix<Character>();
+        matrix.addRow('a', 'b');
+        matrix.addRow('c', null);
+        matrix = Matrix.unmodifiableCopy(matrix);
+        assertUnmodifiable(matrix::addRow);
+        assertUnmodifiable(matrix::addColumn);
+        assertUnmodifiable(matrix::removeFirstRow);
+        assertUnmodifiable(matrix::removeLastRow);
+        assertUnmodifiable(matrix::removeFirstColumn);
+        assertUnmodifiable(matrix::removeLastColumn);
+        assertUnmodifiable(matrix::clear);
+        assertUnmodifiable(matrix::flip);
+        assertUnmodifiable(matrix::reverseX);
+        assertUnmodifiable(matrix::reverseY);
+        assertUnmodifiable(matrix::turnClockwise);
+        assertUnmodifiable(matrix::turnCounterClockwise);
+        Assertions.assertTrue(matrix.size().equals(2, 2));
+        assertData("a,b|c,null", matrix);
     }
 
     @Test
