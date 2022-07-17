@@ -5,6 +5,7 @@ import ezw.Sugar;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -75,6 +76,15 @@ public class Matrix<T> {
      */
     public static <T> Matrix<T> unmodifiableCopy(Matrix<T> matrix) {
         return new Matrix<>(matrix.content.stream().map(Sugar::unmodifiableCopy).toList());
+    }
+
+    /**
+     * Returns a matrix consisting of the results of applying the given function to the elements of this matrix.
+     */
+    public <O> Matrix<O> map(Function<T, O> function) {
+        Objects.requireNonNull(function, "Function is null.");
+        return new Matrix<>(new ArrayList<>(content.stream().map(column ->
+                new ArrayList<>(column.stream().map(function).toList())).toList()));
     }
 
     /**
