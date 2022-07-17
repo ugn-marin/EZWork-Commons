@@ -1383,6 +1383,16 @@ public class MatrixTest {
     }
 
     @Test
+    void map() {
+        var matrix = new Matrix<Character>();
+        matrix.addRow('a', 'b');
+        matrix.addRow('c', 'd');
+        var upper = matrix.map(Character::toUpperCase);
+        Assertions.assertTrue(upper.size().equals(2, 2));
+        assertData("A,B|C,D", upper);
+    }
+
+    @Test
     void badIndexes() {
         assertBadIndex(() -> new Matrix<>(0, 1));
         assertBadIndex(() -> new Matrix<>(1, 0));
