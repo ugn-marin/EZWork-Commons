@@ -27,6 +27,15 @@ public class BlockingThreadPoolExecutor extends ThreadPoolExecutor {
     /**
      * Constructs a new blocking thread pool executor.
      * @param maximumPoolSize The maximum number of threads to allow in the pool.
+     * @param name The name for the named thread factory to use.
+     */
+    public BlockingThreadPoolExecutor(int maximumPoolSize, String name) {
+        this(maximumPoolSize, Concurrent.namedThreadFactory(name));
+    }
+
+    /**
+     * Constructs a new blocking thread pool executor.
+     * @param maximumPoolSize The maximum number of threads to allow in the pool.
      * @param threadFactory The factory to use when creating a new thread.
      */
     public BlockingThreadPoolExecutor(int maximumPoolSize, ThreadFactory threadFactory) {
