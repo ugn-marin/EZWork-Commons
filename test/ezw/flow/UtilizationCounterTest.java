@@ -120,7 +120,7 @@ public class UtilizationCounterTest {
         var f2 = Concurrent.run(() -> {
             Thread.sleep(100);
             counter.busy();
-            Assertions.assertEquals(0.5, counter.getCurrentUtilization(), 0.01);
+            Assertions.assertEquals(0.5, counter.getCurrentUtilization());
             Thread.sleep(400);
             counter.idle();
         });
