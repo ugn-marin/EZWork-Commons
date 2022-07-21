@@ -9,6 +9,44 @@ public class UtilizationCounterTest {
     private static final double delta = 0.03;
 
     @Test
+    void validations() throws InterruptedException {
+        var counter = new UtilizationCounter(2);
+        Assertions.assertEquals(Double.NaN, counter.getAverageUtilization());
+        Assertions.assertEquals(0, counter.getCurrentUtilization());
+        try {
+            counter.stop();
+            Assertions.fail();
+        } catch (IllegalStateException e) {
+            Assertions.assertEquals("Utilization measurement was not started.", e.getMessage());
+        }
+        counter.start();
+        Thread.sleep(50);
+        Assertions.assertEquals(Double.NaN, counter.getAverageUtilization());
+        Assertions.assertEquals(0, counter.getCurrentUtilization());
+        try {
+            counter.idle();
+            Assertions.fail();
+        } catch (IllegalArgumentException e) {
+            Assertions.assertEquals("Value is smaller than the minimum 0.", e.getMessage());
+        }
+        counter.busy();
+        counter.busy();
+        counter.busy();
+        try {
+            counter.busy();
+            Assertions.fail();
+        } catch (IllegalArgumentException e) {
+            Assertions.assertEquals("Value is greater than the maximum 2.", e.getMessage());
+        }
+        try {
+            counter.start();
+            Assertions.fail();
+        } catch (IllegalStateException e) {
+            Assertions.assertEquals("Utilization measurement was already started.", e.getMessage());
+        }
+    }
+
+    @Test
     void flow1() throws Exception {
         var counter = new UtilizationCounter(3);
         counter.start();
