@@ -105,4 +105,34 @@ public class UtilizationCounterTest {
         counter.stop();
         Assertions.assertEquals(0.667, counter.getAverageUtilization(), delta);
     }
+
+    @Test
+    void flow2_plus1() throws Exception {
+        var counter = new UtilizationCounter(4);
+        counter.start();
+        Assertions.assertEquals(0, counter.getCurrentUtilization());
+        Thread.sleep(100);
+        var f1 = Concurrent.run(() -> {
+            counter.busy();
+            Thread.sleep(500);
+            counter.idle();
+        });
+        var f2 = Concurrent.run(() -> {
+            Thread.sleep(100);
+            counter.busy();
+            Assertions.assertEquals(0.5, counter.getCurrentUtilization());
+            Thread.sleep(400);
+            counter.idle();
+        });
+        var f3 = Concurrent.run(() -> {
+            Thread.sleep(150);
+            counter.busy();
+            Assertions.assertEquals(0.75, counter.getCurrentUtilization());
+            Thread.sleep(300);
+            counter.idle();
+        });
+        Concurrent.getAll(Reducer.suppressor(), f1, f2, f3);
+        counter.stop();
+        Assertions.assertEquals(0.5, counter.getAverageUtilization(), delta);
+    }
 }
