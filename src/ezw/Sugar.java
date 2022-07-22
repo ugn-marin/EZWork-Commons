@@ -1,6 +1,8 @@
 package ezw;
 
 import ezw.concurrent.InterruptedRuntimeException;
+import ezw.concurrent.Lazy;
+import ezw.function.Reducer;
 import ezw.function.UnsafeConsumer;
 import ezw.function.UnsafeRunnable;
 
@@ -138,7 +140,7 @@ public abstract class Sugar {
     }
 
     /**
-     * Returns the exception as is if runtime exception, else as undeclared.
+     * Returns the exception as is if runtime exception, else wrapped.
      */
     public static RuntimeException sneaky(Exception e) {
         if (e instanceof RuntimeException re)
@@ -146,6 +148,44 @@ public abstract class Sugar {
         else if (e instanceof InterruptedException ie)
             return new InterruptedRuntimeException(ie);
         return new UndeclaredThrowableException(e);
+    }
+
+    /**
+     * Returns the throwable as an exception.
+     * @param throwable A throwable.
+     * @return The throwable is an exception or null, or wrapped in a new UndeclaredThrowableException otherwise.
+     */
+    public static Exception toException(Throwable throwable) {
+        if (throwable instanceof Exception e)
+            return e;
+        return throwable == null ? null : new UndeclaredThrowableException(throwable);
+    }
+
+    /**
+     * Throws the throwable as an exception, or as Error if is an Error.
+     * @param throwable A throwable.
+     * @throws Exception The throwable if not null, thrown as is if instance of Exception or Error, or wrapped in a new
+     * UndeclaredThrowableException otherwise.
+     */
+    public static void throwIfNonNull(Throwable throwable) throws Exception {
+        if (throwable == null)
+            return;
+        if (throwable instanceof Error e)
+            throw e;
+        throw toException(throwable);
+    }
+
+    /**
+     * Throws the exception reduced from the list, if any.
+     * @param exceptionsReducer The exceptions reducer.
+     * @param exceptions A lazy list of exceptions.
+     * @throws Exception The reduced exception.
+     */
+    public static void throwIfAny(Reducer<Exception> exceptionsReducer, Lazy<List<Exception>> exceptions)
+            throws Exception {
+        Objects.requireNonNull(exceptions, "Lazy list is null.");
+        if (exceptions.isCalculated())
+            throwIfNonNull(exceptionsReducer.apply(exceptions.get()));
     }
 
     /**
@@ -161,7 +201,7 @@ public abstract class Sugar {
             return;
         }
         try {
-            steps.next().run();
+            Objects.requireNonNull(steps.next(), "Step runnable is null.").run();
         } catch (Throwable t) {
             throwableConsumer.accept(t);
         } finally {
@@ -170,22 +210,20 @@ public abstract class Sugar {
     }
 
     /**
-     * Throws the throwable as an exception, or as Error if is an Error.
-     * @param throwable A throwable.
-     * @throws Exception The throwable if not null, thrown as is if instance of Exception or Error, or wrapped in a new
-     * UndeclaredThrowableException otherwise. If already an UndeclaredThrowableException, the cause is unwrapped and
-     * thrown by the same logic.
+     * Runs the provided unsafe runnable steps with guaranteed execution: For each step, subsequent steps are executed
+     * in the <code>finally</code> block. Throwables are thrown if Error, otherwise reduced by the provided reducer.
+     * @param steps The steps.
+     * @param exceptionsReducer The exceptions reducer for all throwables except Errors.
+     * @throws Exception The reduced exception if any step(s) failed.
      */
-    public static void throwIfNonNull(Throwable throwable) throws Exception {
-        if (throwable == null)
-            return;
-        if (throwable instanceof Error e)
-            throw e;
-        if (throwable instanceof UndeclaredThrowableException)
-            throwIfNonNull(throwable.getCause());
-        if (throwable instanceof Exception e)
-            throw e;
-        throw new UndeclaredThrowableException(throwable);
+    public static void runSteps(Iterator<UnsafeRunnable> steps, Reducer<Exception> exceptionsReducer) throws Exception {
+        Lazy<List<Exception>> exceptions = new Lazy<>(ArrayList::new);
+        runSteps(steps, throwable -> {
+            if (throwable instanceof Error e)
+                throw e;
+            exceptions.get().add(toException(throwable));
+        });
+        throwIfAny(exceptionsReducer, exceptions);
     }
 
     /**
