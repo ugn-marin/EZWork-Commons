@@ -4,11 +4,10 @@ import ezw.Sugar;
 import ezw.function.Reducer;
 import ezw.function.UnsafeRunnable;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
@@ -55,16 +54,8 @@ public abstract class Concurrent {
      * @param futures The futures.
      */
     public static void getAll(Reducer<Exception> exceptionsReducer, Future<?>... futures) throws Exception {
-        Lazy<List<Exception>> exceptions = new Lazy<>(ArrayList::new);
-        for (var future : Sugar.requireFull(futures)) {
-            try {
-                future.get();
-            } catch (InterruptedException | ExecutionException e) {
-                exceptions.get().add(e);
-            }
-        }
-        if (exceptions.isCalculated())
-            Sugar.throwIfNonNull(exceptionsReducer.apply(exceptions.get()));
+        Function<Future<?>, UnsafeRunnable> get = future -> future::get;
+        Sugar.runSteps(Stream.of(Sugar.requireFull(futures)).map(get).iterator(), exceptionsReducer);
     }
 
     /**
